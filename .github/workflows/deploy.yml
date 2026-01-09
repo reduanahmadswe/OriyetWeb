@@ -1,4 +1,4 @@
-name: Deploy OriyetWeb (Production)
+name: Deploy OriyetWeb (Prod)
 
 on:
   push:
@@ -23,7 +23,9 @@ jobs:
             PROJECT_DIR="/home/ubuntu/OriyetWeb"
 
             echo "🚀 Deploy started"
-            cd $PROJECT_DIR
+            echo "📂 Project dir: $PROJECT_DIR"
+
+            cd "$PROJECT_DIR"
 
             echo "📥 Pull latest code"
             git fetch origin
@@ -37,7 +39,6 @@ jobs:
             pnpm install
             pnpm prisma generate
             pnpm build
-
             pm2 restart oriyet-backend || pm2 start ecosystem.config.cjs --only oriyet-backend
 
             # =====================
@@ -47,7 +48,6 @@ jobs:
             cd ../frontend
             pnpm install
             pnpm build
-
             pm2 restart oriyet-frontend || pm2 start ecosystem.config.cjs --only oriyet-frontend
 
             pm2 save
