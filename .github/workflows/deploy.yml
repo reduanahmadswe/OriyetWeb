@@ -32,14 +32,14 @@ jobs:
             git reset --hard origin/main
 
             # =====================
-            # Backend
             # =====================
-            echo "⚙️ Backend build"
+            # Backend (DEV MODE)
+            # =====================
+            echo "⚙️ Backend (dev mode)"
             cd backend
             pnpm install
-            pnpm prisma generate
-            pnpm build
             pm2 restart oriyet-backend || pm2 start ecosystem.config.cjs --only oriyet-backend
+
 
             # =====================
             # Frontend
