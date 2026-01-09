@@ -108,6 +108,7 @@ model Event {
   sessions      EventSession[]
   registrations EventRegistration[]
   certificates  Certificate[]
+  eventHosts    EventHost[]
 
   @@map("events")
 }
@@ -313,4 +314,35 @@ model ContactMessage {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("contact_messages")
+}
+
+model Host {
+  id           Int         @id @default(autoincrement())
+  name         String
+  email        String      @unique
+  bio          String?
+  profileImage String?     @map("profile_image")
+  cvLink       String?     @map("cv_link")
+  socialLinks  String?     @map("social_links")
+  isActive     Boolean     @default(true) @map("is_active")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  eventHosts   EventHost[]
+
+  @@map("hosts")
+}
+
+model EventHost {
+  id        Int      @id @default(autoincrement())
+  eventId   Int      @map("event_id")
+  hostId    Int      @map("host_id")
+  role      String   @default("host") // host, speaker, moderator, panelist
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  host  Host  @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, hostId])
+  @@map("event_hosts")
 }
