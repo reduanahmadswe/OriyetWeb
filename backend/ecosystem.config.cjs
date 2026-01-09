@@ -2,9 +2,8 @@ module.exports = {
   apps: [
     {
       name: "oriyet-backend",
-      cwd: "/root/oriyet/backend",
-      script: "dist/server.js",
-      instances: 1,
+      script: "npm",
+      args: "start",
       autorestart: true,
       watch: false,
       env: {

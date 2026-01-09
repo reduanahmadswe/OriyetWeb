@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "oriyet-frontend",
       cwd: "/root/oriyet/frontend",
-      script: "pnpm",
+      script: "npm",
       args: "start",
       env: {
         NODE_ENV: "production",
