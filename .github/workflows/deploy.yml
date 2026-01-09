@@ -36,9 +36,9 @@ jobs:
             # =====================
             echo "⚙️ Backend build"
             cd backend
-            npm install
-            npm run prisma generate
-            npm run build
+            pnpm install
+            pnpm prisma generate
+            pnpm build
             pm2 restart oriyet-backend || pm2 start ecosystem.config.cjs --only oriyet-backend
 
             # =====================
