@@ -30,11 +30,11 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profileData) {
       setFormData({
-        name: profileData.name || '',
-        phone: profileData.phone || '',
+        name: profileData.name || user?.name || '',
+        phone: profileData.phone || user?.phone || '',
       });
     }
-  }, [profileData]);
+  }, [profileData, user]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -137,13 +137,16 @@ export default function ProfilePage() {
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="tel"
-                    value={isEditing ? formData.phone : (profileData?.phone || '')}
+                    value={isEditing ? formData.phone : (profileData?.phone || user?.phone || '')}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     disabled={!isEditing}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                    placeholder="Enter phone number"
+                    placeholder={isEditing ? "Enter phone number" : ((profileData?.phone || user?.phone) ? "" : "Not provided")}
                   />
                 </div>
+                {!isEditing && !profileData?.phone && !user?.phone && (
+                  <p className="mt-1 text-xs text-gray-500">Click "Edit Profile" to add your phone number</p>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">
@@ -164,8 +167,8 @@ export default function ProfilePage() {
                         setSuccessMessage('');
                         setErrorMessage('');
                         setFormData({
-                          name: profileData?.name || '',
-                          phone: profileData?.phone || '',
+                          name: profileData?.name || user?.name || '',
+                          phone: profileData?.phone || user?.phone || '',
                         });
                       }}
                       className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
@@ -177,15 +180,16 @@ export default function ProfilePage() {
                   <button
                     type="button"
                     onClick={() => {
+                      console.log('Edit button clicked');
                       setSuccessMessage('');
                       setErrorMessage('');
                       setFormData({
-                        name: profileData?.name || '',
-                        phone: profileData?.phone || '',
+                        name: profileData?.name || user?.name || '',
+                        phone: profileData?.phone || user?.phone || '',
                       });
                       setIsEditing(true);
                     }}
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium cursor-pointer"
                   >
                     Edit Profile
                   </button>
