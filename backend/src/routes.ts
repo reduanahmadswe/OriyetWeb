@@ -12,6 +12,7 @@ import adminRoutes from './modules/admin/admin.routes.js';
 import opportunityRoutes from './modules/opportunities/opportunity.routes.js';
 import testRoutes from './routes/test.routes.js';
 import contactRoutes from './modules/contact/contact.routes.js';
+import newsletterRoutes from './modules/newsletters/newsletter.routes.js';
 
 import prisma from './config/db.js';
 
@@ -37,6 +38,7 @@ router.use('/blogs', blogRoutes);
 router.use('/admin', adminRoutes);
 router.use('/opportunities', opportunityRoutes);
 router.use('/contact', contactRoutes);
+router.use('/newsletters', newsletterRoutes);
 router.use('/test', testRoutes); // Test endpoint for debugging
 
 

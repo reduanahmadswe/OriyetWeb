@@ -20,6 +20,7 @@ const navigation = [
 
 const moreMenuItems = [
   { name: 'Past Events', href: '/events/past' },
+  { name: 'Newsletter', href: '/newsletter' },
   { name: 'Donate Us', href: '/donate' },
 ];
 
@@ -84,9 +85,12 @@ export default function Navbar() {
             ))}
             
             {/* More Dropdown */}
-            <div className="relative">
+            <div 
+              className="relative"
+              onMouseEnter={() => setMoreMenuOpen(true)}
+              onMouseLeave={() => setMoreMenuOpen(false)}
+            >
               <button
-                onClick={() => setMoreMenuOpen(!moreMenuOpen)}
                 className={cn(
                   'relative px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-1',
                   moreMenuItems.some(item => pathname === item.href)
@@ -102,12 +106,8 @@ export default function Navbar() {
               </button>
               
               {moreMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setMoreMenuOpen(false)}
-                  ></div>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                <div className="absolute right-0 pt-2 z-50">
+                  <div className="w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2">
                     {moreMenuItems.map((item) => (
                       <Link
                         key={item.name}
@@ -124,7 +124,7 @@ export default function Navbar() {
                       </Link>
                     ))}
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>

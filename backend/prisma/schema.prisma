@@ -346,3 +346,18 @@ model EventHost {
   @@unique([eventId, hostId])
   @@map("event_hosts")
 }
+
+model Newsletter {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  thumbnail   String?  // Google Drive link for thumbnail
+  pdfLink     String   @map("pdf_link") // Google Drive link for PDF
+  isPublished Boolean  @default(true) @map("is_published")
+  views       Int      @default(0)
+  downloads   Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("newsletters")
+}

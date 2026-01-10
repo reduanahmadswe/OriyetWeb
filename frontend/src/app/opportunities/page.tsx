@@ -70,30 +70,15 @@ export default function OpportunitiesPage() {
                     </div>
                 ) : error ? (
                     <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-xl max-w-2xl mx-auto text-center px-4">
-                        <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                            <ServerCrash className="w-10 h-10 text-red-500" />
+                        <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-6">
+                            <Briefcase className="w-10 h-10 text-orange-500" />
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                            Service Unavailable
+                            Opportunities Not Available
                         </h3>
-                        <p className="text-gray-600 max-w-md mx-auto mb-8 text-lg">
-                            We are currently connecting to our secure backend servers. Please try again in a few moments.
+                        <p className="text-gray-600 max-w-md mx-auto text-lg">
+                            Stay tuned! New opportunities are coming soon. Check back later for exciting internships, jobs, and fellowships.
                         </p>
-                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium mb-8 border border-blue-100">
-                            <span className="relative flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
-                            </span>
-                            System Status: Connecting...
-                        </div>
-
-                        <button
-                            onClick={fetchOpportunities}
-                            className="flex items-center gap-2 px-8 py-3 bg-[#004aad] hover:bg-[#003882] text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-[#004aad]/30 hover:-translate-y-0.5 active:translate-y-0"
-                        >
-                            <RefreshCcw className="w-4 h-4" />
-                            Retry Connection
-                        </button>
                     </div>
                 ) : opportunities.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-lg max-w-2xl mx-auto text-center px-4">

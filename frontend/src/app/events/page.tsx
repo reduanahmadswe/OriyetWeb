@@ -87,30 +87,15 @@ export default function EventsPage() {
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-xl max-w-2xl mx-auto text-center px-4">
-              <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
-                <ServerCrash className="w-10 h-10 text-red-500" />
+              <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-6">
+                <CalendarOff className="w-10 h-10 text-orange-500" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                Events Unavailable at the Moment
+                Events Not Available
               </h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-8 text-lg">
-                We are currently connecting to our secure backend servers. The events feed will be live precisely when the backend integration is complete.
+              <p className="text-gray-600 max-w-md mx-auto text-lg">
+                Stay tuned! Exciting events are coming soon. Check back later for workshops, seminars, and learning opportunities.
               </p>
-              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-[#004aad] rounded-lg text-sm font-medium mb-8 border border-blue-100">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#004aad]"></span>
-                </span>
-                System Status: Backend Integration in Progress
-              </div>
-
-              <button
-                onClick={() => refetch()}
-                className="flex items-center gap-2 px-8 py-3 bg-[#004aad] hover:bg-[#003882] text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-[#004aad]/30 hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <RefreshCcw className="w-4 h-4" />
-                Retry Connection
-              </button>
             </div>
           ) : data?.events?.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-gray-100 shadow-lg max-w-2xl mx-auto text-center px-4">

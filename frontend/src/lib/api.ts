@@ -190,6 +190,21 @@ export const blogAPI = {
   delete: (id: number) => api.delete(`/blogs/${id}`),
 };
 
+// Newsletter APIs
+export const newsletterAPI = {
+  // Public
+  getAll: (params?: any) => api.get('/newsletters', { params }),
+  getById: (id: number) => api.get(`/newsletters/${id}`),
+  incrementViews: (id: number) => api.post(`/newsletters/${id}/view`),
+  incrementDownloads: (id: number) => api.post(`/newsletters/${id}/download`),
+  // Admin
+  adminGetAll: (params?: any) => api.get('/newsletters/admin/all', { params }),
+  create: (data: any) => api.post('/newsletters/admin', data),
+  update: (id: number, data: any) => api.put(`/newsletters/admin/${id}`, data),
+  delete: (id: number) => api.delete(`/newsletters/admin/${id}`),
+  togglePublish: (id: number) => api.put(`/newsletters/admin/${id}/toggle-publish`),
+};
+
 // Page APIs
 export const pageAPI = {
   getBySlug: (slug: string) => api.get(`/pages/${slug}`),
