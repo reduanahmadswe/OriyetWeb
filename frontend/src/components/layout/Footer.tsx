@@ -10,7 +10,7 @@ const footerLinks = {
     { name: 'Contact', href: '/contact' },
   ],
   events: [
-    { name: 'Upcoming Events Reduan', href: '/events' },
+    { name: 'Upcoming Events', href: '/events' },
     { name: 'Past Events', href: '/events/past' },
     { name: 'Categories', href: '/events/categories' },
     { name: 'Host an Event', href: '/host-event' },
