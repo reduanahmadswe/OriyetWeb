@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Image from 'next/image';
 import { Search, FileText, Download, Eye, Calendar, Newspaper } from 'lucide-react';
 import { newsletterAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
@@ -14,6 +13,8 @@ interface Newsletter {
   description?: string;
   thumbnail?: string;
   pdfLink: string;
+  startDate?: string;
+  endDate?: string;
   views: number;
   downloads: number;
   createdAt: string;
@@ -83,6 +84,11 @@ const getGoogleDriveDownloadUrl = (url: string) => {
 const getGoogleDriveThumbnailUrl = (url: string) => {
   if (!url) return '';
   
+  // Check if it's already a direct image URL (not Google Drive)
+  if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) {
+    return url;
+  }
+  
   let fileId = '';
   
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
@@ -101,6 +107,7 @@ const getGoogleDriveThumbnailUrl = (url: string) => {
   }
   
   if (fileId) {
+    // Use thumbnail API - same as admin page
     return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
   }
   
@@ -156,7 +163,7 @@ export default function NewsletterPage() {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#004aad]/5 rounded-full blur-3xl -ml-40 -mb-40 pointer-events-none" />
 
       {/* Header */}
-      <section className="relative pt-20 pb-12 text-center z-10">
+      <section className="relative pt-20 pb-8 text-center z-10">
         <div className="container-custom">
           <div className="max-w-3xl mx-auto text-center">
             <span className="inline-block py-1 px-3 rounded-full bg-[#004aad]/10 text-[#004aad] text-sm font-semibold mb-4">
@@ -164,14 +171,122 @@ export default function NewsletterPage() {
               Stay Updated
             </span>
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-[#004aad]">
-              Newsletter
+              নিউজলেটার
             </h1>
-            <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-              Browse our collection of newsletters to stay informed about our latest updates, events, and insights.
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              আমাদের সর্বশেষ আপডেট, ইভেন্ট এবং গুরুত্বপূর্ণ তথ্য সম্পর্কে জানুন
             </p>
+          </div>
+        </div>
+      </section>
 
-            {/* Search */}
-            <form onSubmit={handleSearch} className="max-w-xl mx-auto relative group">
+      {/* What is Newsletter Section - Redesigned */}
+      <section className="relative py-12 z-10">
+        <div className="container-custom">
+          <div className="max-w-5xl mx-auto">
+            {/* Main Info Card */}
+            <div className="relative bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+              
+              <div className="p-8 md:p-12">
+                {/* Title with icon */}
+                <div className="text-center mb-10">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#004aad] to-[#003882] rounded-2xl shadow-lg mb-4">
+                    <Newspaper className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    নিউজলেটার কী?
+                  </h2>
+                  <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
+                    নিউজলেটার হলো একটি নিয়মিত প্রকাশনা যেখানে আমরা আমাদের সংস্থার সকল কার্যক্রম, 
+                    আসন্ন ইভেন্ট, সাফল্যের গল্প এবং গুরুত্বপূর্ণ ঘোষণা শেয়ার করি।
+                  </p>
+                </div>
+
+                {/* Feature Cards */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Why Read */}
+                  <div className="group relative bg-gradient-to-br from-[#004aad]/5 to-transparent rounded-2xl p-6 border border-[#004aad]/10 hover:border-[#004aad]/30 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-[#004aad] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                        <span className="text-2xl">🎯</span>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-[#004aad] mb-3">
+                          কেন নিউজলেটার পড়বেন?
+                        </h3>
+                        <ul className="space-y-2.5">
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
+                            সর্বশেষ ইভেন্ট ও প্রোগ্রাম সম্পর্কে জানুন
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
+                            নতুন সুযোগ-সুবিধা সম্পর্কে আপডেট পান
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
+                            সফল অংশগ্রহণকারীদের অভিজ্ঞতা জানুন
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
+                            আমাদের কমিউনিটির সাথে যুক্ত থাকুন
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* What's Inside */}
+                  <div className="group relative bg-gradient-to-br from-[#ff7620]/5 to-transparent rounded-2xl p-6 border border-[#ff7620]/10 hover:border-[#ff7620]/30 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-[#ff7620] rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                        <span className="text-2xl">📖</span>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-[#ff7620] mb-3">
+                          নিউজলেটারে কী থাকে?
+                        </h3>
+                        <ul className="space-y-2.5">
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
+                            সম্পন্ন ইভেন্টের হাইলাইটস ও ছবি
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
+                            আসন্ন কর্মসূচির বিস্তারিত তথ্য
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
+                            শিক্ষামূলক আর্টিকেল ও টিপস
+                          </li>
+                          <li className="flex items-center gap-2 text-gray-600">
+                            <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
+                            বিশেষ ঘোষণা ও অফার
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CTA Box */}
+                <div className="mt-8 bg-gradient-to-r from-[#004aad] to-[#003882] rounded-2xl p-6 text-center">
+                  <p className="text-white text-lg flex items-center justify-center gap-2 flex-wrap">
+                    <span className="text-2xl">💡</span>
+                    <span>নিচে থেকে যেকোনো নিউজলেটার <strong>&quot;View&quot;</strong> করে পড়ুন অথবা <strong>&quot;Download&quot;</strong> করে সংরক্ষণ করুন!</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Search Section */}
+      <section className="relative pb-12 z-10">
+        <div className="container-custom">
+          <div className="max-w-xl mx-auto">
+            <form onSubmit={handleSearch} className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400 group-focus-within:text-[#004aad] transition-colors" />
               </div>
@@ -179,14 +294,14 @@ export default function NewsletterPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search newsletters..."
+                placeholder="নিউজলেটার খুঁজুন..."
                 className="block w-full pl-11 pr-4 py-4 border-2 border-gray-100 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:bg-white focus:border-[#004aad]/30 focus:ring-4 focus:ring-[#004aad]/5 transition-all shadow-lg shadow-gray-100/50"
               />
               <button
                 type="submit"
                 className="absolute inset-y-2 right-2 px-6 bg-[#004aad] hover:bg-[#003882] text-white rounded-xl font-medium transition-colors shadow-md hover:shadow-lg"
               >
-                Search
+                খুঁজুন
               </button>
             </form>
           </div>
@@ -195,10 +310,10 @@ export default function NewsletterPage() {
 
       {/* Newsletter Grid */}
       <section className="container-custom pb-24 relative z-10">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 animate-pulse">
                   <div className="h-48 bg-gray-200" />
                   <div className="p-5 space-y-3">
@@ -215,7 +330,13 @@ export default function NewsletterPage() {
             </div>
           ) : data?.newsletters?.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className={`grid gap-8 ${
+                data.newsletters.length === 1 
+                  ? 'grid-cols-1 max-w-md mx-auto' 
+                  : data.newsletters.length === 2 
+                    ? 'grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto'
+                    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+              }`}>
                 {data.newsletters.map((newsletter: Newsletter) => (
                   <article 
                     key={newsletter.id} 
@@ -224,12 +345,11 @@ export default function NewsletterPage() {
                     {/* Thumbnail */}
                     <div className="relative h-48 w-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#004aad]/10 to-[#ff7620]/10">
                       {newsletter.thumbnail ? (
-                        <Image
+                        <img
                           src={getGoogleDriveThumbnailUrl(newsletter.thumbnail)}
                           alt={newsletter.title}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-700"
-                          unoptimized
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -246,16 +366,35 @@ export default function NewsletterPage() {
                       </h3>
 
                       {newsletter.description && (
-                        <p className="text-gray-600 text-sm line-clamp-2 mb-4 flex-grow leading-relaxed">
+                        <p className="text-gray-600 text-sm line-clamp-2 mb-3 flex-grow leading-relaxed">
                           {newsletter.description}
                         </p>
                       )}
 
+                      {/* Date Range Badge */}
+                      {(newsletter.startDate || newsletter.endDate) && (
+                        <div className="mb-3">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#004aad]/10 to-[#ff7620]/10 rounded-lg border border-[#004aad]/20">
+                            <Calendar className="w-3.5 h-3.5 text-[#004aad]" />
+                            <span className="text-xs font-medium text-gray-700">
+                              {newsletter.startDate && newsletter.endDate ? (
+                                <>
+                                  {formatDate(newsletter.startDate)} — {formatDate(newsletter.endDate)}
+                                </>
+                              ) : newsletter.startDate ? (
+                                <>{formatDate(newsletter.startDate)} থেকে</>
+                              ) : (
+                                <>{formatDate(newsletter.endDate!)} পর্যন্ত</>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Stats */}
                       <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {formatDate(newsletter.createdAt)}
+                        <span className="flex items-center gap-1 text-gray-400">
+                          প্রকাশ: {formatDate(newsletter.createdAt)}
                         </span>
                         <div className="flex items-center gap-3">
                           <span className="flex items-center gap-1">

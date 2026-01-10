@@ -331,106 +331,125 @@ export default function EventDetailsPage() {
       id: 'hosts',
       label: 'Speakers & Guests',
       content: (
-        <div className="space-y-6">
+        <div className="space-y-8">
+          {/* Section Header */}
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              Meet Our Speakers & Guests
+            </h2>
+            <p className="text-gray-500 max-w-2xl mx-auto">
+              Learn from industry experts and distinguished guests who will share their knowledge and experience
+            </p>
+          </div>
+
           {event.guests && event.guests.length > 0 ? (
-            event.guests.map((guest: any, index: number) => (
-              <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 md:p-8 border border-blue-100">
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Guest Picture */}
-                  {guest.pictureLink && (
-                    <div className="flex-shrink-0">
-                      <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-xl overflow-hidden shadow-lg border-4 border-white">
-                        <Image
-                          src={guest.pictureLink}
-                          alt={guest.name || 'Speaker'}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
-                  )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {event.guests.map((guest: any, index: number) => (
+                <div 
+                  key={index} 
+                  className="group relative bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] transition-all duration-500 ease-out hover:-translate-y-2"
+                >
+                  {/* Gradient Overlay on Hover */}
+                  <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${guest.role === 'speaker' ? 'bg-gradient-to-br from-blue-500/5 to-indigo-500/5' : 'bg-gradient-to-br from-emerald-500/5 to-teal-500/5'}`} />
                   
-                  {/* Guest Information */}
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl md:text-2xl font-bold text-gray-900">{guest.name}</h3>
-                        <Badge variant={guest.role === 'speaker' ? 'primary' : 'secondary'} className="capitalize">
-                          {guest.role}
-                        </Badge>
+                  <div className="relative p-6 md:p-8">
+                    {/* Profile Section */}
+                    <div className="flex items-start gap-5">
+                      {/* Avatar with Glow Effect */}
+                      <div className="relative flex-shrink-0">
+                        <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500 ${guest.role === 'speaker' ? 'bg-blue-400' : 'bg-emerald-400'}`} />
+                        <div className={`relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden ring-2 ${guest.role === 'speaker' ? 'ring-blue-200 group-hover:ring-blue-400' : 'ring-emerald-200 group-hover:ring-emerald-400'} transition-all duration-300`}>
+                          {guest.pictureLink ? (
+                            <Image
+                              src={guest.pictureLink}
+                              alt={guest.name || 'Speaker'}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className={`w-full h-full flex items-center justify-center ${guest.role === 'speaker' ? 'bg-gradient-to-br from-blue-50 to-indigo-100' : 'bg-gradient-to-br from-emerald-50 to-teal-100'}`}>
+                              <User className={`w-10 h-10 ${guest.role === 'speaker' ? 'text-blue-400' : 'text-emerald-400'}`} />
+                            </div>
+                          )}
+                        </div>
+                        {/* Role Badge */}
+                        <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-semibold text-white shadow-lg whitespace-nowrap ${guest.role === 'speaker' ? 'bg-gradient-to-r from-blue-500 to-indigo-600' : 'bg-gradient-to-r from-emerald-500 to-teal-600'}`}>
+                          {guest.role === 'speaker' ? '🎤 Speaker' : '⭐ Guest'}
+                        </div>
                       </div>
-                      {guest.bio && (
-                        <p className="text-gray-600">{guest.bio}</p>
-                      )}
+
+                      {/* Name & Bio */}
+                      <div className="flex-1 min-w-0 pt-1">
+                        <h3 className={`text-xl font-bold text-gray-900 mb-2 transition-colors duration-300 ${guest.role === 'speaker' ? 'group-hover:text-blue-600' : 'group-hover:text-emerald-600'}`}>
+                          {guest.name}
+                        </h3>
+                        {guest.bio && (
+                          <p className="text-gray-500 text-sm line-clamp-3 leading-relaxed">
+                            {guest.bio}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {/* Guest Email */}
-                      {guest.email && (
-                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                            <Mail className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-500 font-medium">Email</p>
+
+                    {/* Contact Links */}
+                    {(guest.email || guest.website || guest.cvLink) && (
+                      <div className="mt-6 pt-5 border-t border-gray-100/80">
+                        <div className="flex flex-wrap gap-2">
+                          {/* Email Button */}
+                          {guest.email && (
                             <a 
                               href={`mailto:${guest.email}`}
-                              className="text-sm text-blue-600 hover:text-blue-700 font-medium truncate block"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-600 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                             >
-                              {guest.email}
+                              <Mail className="w-4 h-4" />
+                              <span>Email</span>
                             </a>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Guest Website */}
-                      {guest.website && (
-                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                            <Globe2 className="w-5 h-5 text-green-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-500 font-medium">Website</p>
+                          )}
+                          
+                          {/* Website Button */}
+                          {guest.website && (
                             <a 
                               href={guest.website}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-green-600 hover:text-green-700 font-medium truncate block inline-flex items-center gap-1"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 text-emerald-600 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                             >
-                              {guest.website.replace(/^https?:\/\//, '')}
-                              <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                              <Globe2 className="w-4 h-4" />
+                              <span>Website</span>
+                              <ExternalLink className="w-3 h-3" />
                             </a>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Guest CV */}
-                      {guest.cvLink && (
-                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-5 h-5 text-purple-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-500 font-medium">CV / Resume</p>
+                          )}
+                          
+                          {/* CV Button */}
+                          {guest.cvLink && (
                             <a 
                               href={guest.cvLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-purple-600 hover:text-purple-700 font-medium inline-flex items-center gap-1"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-600 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                             >
-                              View CV
-                              <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                              <FileText className="w-4 h-4" />
+                              <span>View CV</span>
+                              <ExternalLink className="w-3 h-3" />
                             </a>
-                          </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
-            <p className="text-gray-500">Speaker information will be updated soon.</p>
+            <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-blue-50/50 rounded-2xl">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <User className="w-10 h-10 text-blue-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Speakers Coming Soon</h3>
+              <p className="text-gray-500 max-w-md mx-auto">
+                Speaker and guest information will be updated soon. Stay tuned for exciting announcements!
+              </p>
+            </div>
           )}
         </div>
       ),

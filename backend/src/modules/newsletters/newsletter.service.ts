@@ -7,6 +7,8 @@ interface CreateNewsletterInput {
   description?: string;
   thumbnail?: string;
   pdf_link: string;
+  start_date?: string;
+  end_date?: string;
   is_published?: boolean;
 }
 
@@ -18,6 +20,8 @@ export class NewsletterService {
         description: data.description,
         thumbnail: data.thumbnail,
         pdfLink: data.pdf_link,
+        startDate: data.start_date ? new Date(data.start_date) : null,
+        endDate: data.end_date ? new Date(data.end_date) : null,
         isPublished: data.is_published ?? true,
       },
     });
@@ -37,6 +41,8 @@ export class NewsletterService {
     if (data.description !== undefined) updateData.description = data.description;
     if (data.thumbnail !== undefined) updateData.thumbnail = data.thumbnail;
     if (data.pdf_link !== undefined) updateData.pdfLink = data.pdf_link;
+    if (data.start_date !== undefined) updateData.startDate = data.start_date ? new Date(data.start_date) : null;
+    if (data.end_date !== undefined) updateData.endDate = data.end_date ? new Date(data.end_date) : null;
     if (data.is_published !== undefined) updateData.isPublished = data.is_published;
 
     const updated = await prisma.newsletter.update({

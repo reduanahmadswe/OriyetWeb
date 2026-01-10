@@ -15,8 +15,8 @@ import {
   Newspaper,
   Link as LinkIcon,
   Image as ImageIcon,
+  Calendar,
 } from 'lucide-react';
-import Image from 'next/image';
 import { api, newsletterAPI } from '@/lib/api';
 import { Button, Input, Modal, Loading, Spinner, Badge, Pagination } from '@/components/ui';
 import { formatDate } from '@/lib/utils';
@@ -28,6 +28,8 @@ interface Newsletter {
   description?: string;
   thumbnail?: string;
   pdfLink: string;
+  startDate?: string;
+  endDate?: string;
   isPublished: boolean;
   views: number;
   downloads: number;
@@ -38,6 +40,11 @@ interface Newsletter {
 // Function to get Google Drive thumbnail URL
 const getGoogleDriveThumbnailUrl = (url: string) => {
   if (!url) return '';
+  
+  // Check if it's already a direct image URL (not Google Drive)
+  if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) {
+    return url;
+  }
   
   let fileId = '';
   
@@ -57,7 +64,8 @@ const getGoogleDriveThumbnailUrl = (url: string) => {
   }
   
   if (fileId) {
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w200`;
+    // Use thumbnail API - more reliable
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
   }
   
   return url;
@@ -76,6 +84,8 @@ export default function AdminNewsletterPage() {
     description: '',
     thumbnail: '',
     pdf_link: '',
+    start_date: '',
+    end_date: '',
     is_published: true,
   });
 
@@ -147,6 +157,8 @@ export default function AdminNewsletterPage() {
         description: newsletter.description || '',
         thumbnail: newsletter.thumbnail || '',
         pdf_link: newsletter.pdfLink,
+        start_date: newsletter.startDate ? new Date(newsletter.startDate).toISOString().split('T')[0] : '',
+        end_date: newsletter.endDate ? new Date(newsletter.endDate).toISOString().split('T')[0] : '',
         is_published: newsletter.isPublished,
       });
     } else {
@@ -156,6 +168,8 @@ export default function AdminNewsletterPage() {
         description: '',
         thumbnail: '',
         pdf_link: '',
+        start_date: '',
+        end_date: '',
         is_published: true,
       });
     }
@@ -170,6 +184,8 @@ export default function AdminNewsletterPage() {
       description: '',
       thumbnail: '',
       pdf_link: '',
+      start_date: '',
+      end_date: '',
       is_published: true,
     });
   };
@@ -283,12 +299,11 @@ export default function AdminNewsletterPage() {
                         <div className="flex items-center gap-4">
                           <div className="w-16 h-16 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 relative">
                             {newsletter.thumbnail ? (
-                              <Image
+                              <img
                                 src={getGoogleDriveThumbnailUrl(newsletter.thumbnail)}
                                 alt={newsletter.title}
-                                fill
-                                className="object-cover"
-                                unoptimized
+                                className="absolute inset-0 w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -482,6 +497,37 @@ export default function AdminNewsletterPage() {
             />
             <p className="text-xs text-gray-500 mt-1">
               Paste the Google Drive link to the PDF file
+            </p>
+          </div>
+
+          {/* Date Range */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Calendar className="w-4 h-4 inline mr-1" />
+              নিউজলেটার সময়কাল (Date Range)
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">শুরুর তারিখ</label>
+                <input
+                  type="date"
+                  value={formData.start_date}
+                  onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">শেষের তারিখ</label>
+                <input
+                  type="date"
+                  value={formData.end_date}
+                  onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004aad]/20 focus:border-[#004aad]"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              এই নিউজলেটার কোন তারিখ থেকে কোন তারিখ পর্যন্ত সময়ের জন্য (যেমন: ১ জানুয়ারি - ১৫ জানুয়ারি)
             </p>
           </div>
 
