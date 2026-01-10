@@ -9,6 +9,7 @@ import {
   Calendar,
   MapPin,
   Users,
+  User,
   Clock,
   Globe,
   Share2,
