@@ -12,6 +12,7 @@ import {
   forgotPasswordValidation,
   resetPasswordValidation,
   changePasswordValidation,
+  verifyAndChangePasswordValidation,
 } from './auth.validation.js';
 import twoFactorRoutes from './twoFactor.routes.js';
 
@@ -34,6 +35,8 @@ router.use('/2fa', twoFactorRoutes);
 // Protected routes
 router.post('/logout', authenticate, authController.logout);
 router.post('/change-password', authenticate, validate(changePasswordValidation), authController.changePassword);
+router.post('/send-password-change-otp', authenticate, authController.sendPasswordChangeOTP);
+router.post('/verify-and-change-password', authenticate, validate(verifyAndChangePasswordValidation), authController.verifyAndChangePassword);
 router.get('/me', authenticate, authController.getMe);
 
 export default router;

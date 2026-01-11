@@ -104,6 +104,9 @@ export const authAPI = {
   forgotPassword: (email: string) => api.post('/auth/forgot-password', { email }),
   resetPassword: (data: any) => api.post('/auth/reset-password', data),
   changePassword: (data: any) => api.post('/auth/change-password', data),
+  sendPasswordChangeOTP: () => api.post('/auth/send-password-change-otp'),
+  verifyAndChangePassword: (data: { otp: string; currentPassword: string; newPassword: string }) => 
+    api.post('/auth/verify-and-change-password', data),
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
   // 2FA

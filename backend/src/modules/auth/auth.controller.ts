@@ -101,6 +101,23 @@ export class AuthController {
     });
   });
 
+  sendPasswordChangeOTP = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const result = await authService.sendPasswordChangeOTP(req.user!.id);
+    res.json({
+      success: true,
+      ...result,
+    });
+  });
+
+  verifyAndChangePassword = asyncHandler(async (req: AuthRequest, res: Response) => {
+    const { otp, currentPassword, newPassword } = req.body;
+    const result = await authService.verifyAndChangePassword(req.user!.id, otp, currentPassword, newPassword);
+    res.json({
+      success: true,
+      ...result,
+    });
+  });
+
   getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
     res.json({
       success: true,

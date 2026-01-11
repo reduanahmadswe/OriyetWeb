@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '../../config/db.js';
 import { PrismaClient } from '@prisma/client';
 import { generateTokens, verifyRefreshToken, JwtPayload } from '../../utils/jwt.util.js';
-import { sendOTPEmail } from '../../utils/email.util.js';
+import { sendOTPEmail, sendEmail } from '../../utils/email.util.js';
 import { generateOTP } from '../../utils/helpers.util.js';
 import { AppError } from '../../middlewares/error.middleware.js';
 import { OAuth2Client } from 'google-auth-library';
@@ -628,6 +628,194 @@ export class AuthService {
     await prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
+    });
+
+    return { message: 'Password changed successfully' };
+  }
+
+  /**
+   * Send OTP to user's email for password change verification
+   */
+  async sendPasswordChangeOTP(userId: number) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true, authProvider: true },
+    });
+
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    // Check if user has local auth (password-based)
+    if (user.authProvider !== 'local') {
+      throw new AppError('Password change is not available for social login accounts', 400);
+    }
+
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await prisma.otpCode.create({
+      data: {
+        email: user.email,
+        code: otp,
+        type: 'password_change',
+        expiresAt,
+      },
+    });
+
+    // Send OTP email
+    await sendEmail({
+      to: user.email,
+      subject: 'ORIYET - Password Change Verification',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .header h1 { color: white; margin: 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .otp-box { background: white; border: 2px dashed #667eea; padding: 20px; text-align: center; margin: 20px 0; border-radius: 10px; }
+            .otp-code { font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 5px; }
+            .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>ORIYET</h1>
+            </div>
+            <div class="content">
+              <h2>Password Change Request</h2>
+              <p>Hello ${user.name},</p>
+              <p>We received a request to change your password. Use the following OTP code to verify your identity:</p>
+              <div class="otp-box">
+                <span class="otp-code">${otp}</span>
+              </div>
+              <p>This code will expire in <strong>10 minutes</strong>.</p>
+              <div class="warning">
+                <strong>⚠️ Security Notice:</strong> If you didn't request this password change, please ignore this email and your password will remain unchanged.
+              </div>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} ORIYET. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    return { message: 'OTP sent to your email address' };
+  }
+
+  /**
+   * Verify OTP and change password
+   */
+  async verifyAndChangePassword(userId: number, otp: string, currentPassword: string, newPassword: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true, password: true, authProvider: true },
+    });
+
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    // Check if user has local auth
+    if (user.authProvider !== 'local') {
+      throw new AppError('Password change is not available for social login accounts', 400);
+    }
+
+    // Verify OTP
+    const otpRecord = await prisma.otpCode.findFirst({
+      where: {
+        email: user.email,
+        code: otp,
+        type: 'password_change',
+        isUsed: false,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!otpRecord) {
+      throw new AppError('Invalid or expired OTP', 400);
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password!);
+    if (!isPasswordValid) {
+      throw new AppError('Current password is incorrect', 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await prisma.$transaction(async (tx: TransactionClient) => {
+      // Mark OTP as used
+      await tx.otpCode.update({
+        where: { id: otpRecord.id },
+        data: { isUsed: true },
+      });
+
+      // Update password
+      await tx.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+    });
+
+    // Send confirmation email
+    await sendEmail({
+      to: user.email,
+      subject: 'ORIYET - Password Changed Successfully',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .header h1 { color: white; margin: 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+            .success-icon { text-align: center; margin: 20px 0; }
+            .success-icon span { font-size: 60px; }
+            .info-box { background: #e8f4fd; border: 1px solid #bee5eb; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>ORIYET</h1>
+            </div>
+            <div class="content">
+              <div class="success-icon">
+                <span>✅</span>
+              </div>
+              <h2 style="text-align: center;">Password Changed Successfully!</h2>
+              <p>Hello ${user.name},</p>
+              <p>Your password has been successfully changed.</p>
+              <div class="info-box">
+                <p><strong>📅 Changed at:</strong> ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</p>
+              </div>
+              <div class="warning">
+                <strong>⚠️ Important:</strong> If you did not make this change, please contact our support team immediately and secure your account.
+              </div>
+              <p>Thank you for keeping your account secure!</p>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} ORIYET. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
     });
 
     return { message: 'Password changed successfully' };
