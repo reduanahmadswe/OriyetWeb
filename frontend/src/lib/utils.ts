@@ -110,6 +110,45 @@ export function getStatusColor(status: string) {
 
 export function getImageUrl(path: string | null | undefined) {
   if (!path) return '/images/placeholder.svg';
+
+  // Handle Google Drive and other Cloud Storage links globally
+  if (path.includes('drive.google.com') || path.includes('docs.google.com')) {
+    let fileId = '';
+
+    // Format: https://drive.google.com/file/d/FILE_ID/view
+    const fileMatch = path.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileMatch) fileId = fileMatch[1];
+
+    if (!fileId) {
+      const openMatch = path.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (openMatch) fileId = openMatch[1];
+    }
+
+    if (!fileId) {
+      const ucMatch = path.match(/\/uc\?.*id=([a-zA-Z0-9_-]+)/);
+      if (ucMatch) fileId = ucMatch[1];
+    }
+
+    if (fileId) {
+      // Use thumbnail API for high quality images globally
+      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`;
+    }
+  }
+
+  // Handle Dropbox links
+  if (path.includes('dropbox.com')) {
+    return path
+      .replace('?dl=0', '')
+      .replace('?dl=1', '')
+      .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+      .replace('dropbox.com', 'dl.dropboxusercontent.com');
+  }
+
+  // Handle OneDrive links
+  if (path.includes('1drv.ms') || path.includes('onedrive.live.com')) {
+    return path.replace('view.aspx', 'embed.aspx').replace('redir', 'embed');
+  }
+
   if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/')) return path;
 
   // Guard against invalid paths (e.g. error messages or text with spaces)

@@ -59,11 +59,6 @@ export default function QuoteModal({ isOpen, onClose }: QuoteModalProps) {
                 </div>
               </div>
 
-              {/* Title */}
-              <h3 className="text-center text-yellow-400 font-semibold mb-6 text-lg">
-                আজকের উক্তি
-              </h3>
-
               {/* Quote text */}
               <div className="relative">
                 <p className="text-white text-xl md:text-2xl text-center leading-relaxed font-medium mb-8">

@@ -427,3 +427,524 @@
 .react-datepicker__day--selected {
   @apply bg-primary-500 hover:bg-primary-600;
 }
+
+/* Print styles for PDF export */
+@media print {
+
+  /* Hide navigation, buttons, and other UI elements */
+  nav,
+  header,
+  footer,
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  /* Optimize page for printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Ensure content fits on page */
+  #blog-content-pdf {
+    max-width: 100% !important;
+    padding: 20px !important;
+  }
+
+  /* Prevent page breaks inside elements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  p,
+  li {
+    page-break-inside: avoid;
+  }
+
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  /* Remove shadows and transitions for print */
+  * {
+    box-shadow: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure links are visible */
+  a {
+    text-decoration: underline;
+  }
+
+  /* Remove background colors that waste ink */
+  .bg-gray-50,
+  .bg-gray-100 {
+    background: white !important;
+  }
+}
+
+/* Advanced TipTap Editor Features Support */
+
+/* Task List / Checklist */
+.tiptap ul[data-type="taskList"],
+.tiptap ul.contains-task-list,
+.tiptap ul.task-list,
+.tiptap .task-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap ul[data-type="taskList"] li,
+.tiptap ul.contains-task-list li,
+.tiptap ul.task-list li,
+.tiptap .task-list li,
+.tiptap li[data-type="taskItem"],
+.tiptap .task-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li>label,
+.tiptap ul.contains-task-list li>label,
+.tiptap ul.task-list li>label,
+.tiptap .task-list li>label,
+.tiptap li[data-type="taskItem"]>label,
+.tiptap .task-item>label {
+  flex: 0 0 auto;
+  margin-right: 0.5rem;
+  user-select: none;
+}
+
+.tiptap ul[data-type="taskList"] li>div,
+.tiptap ul.contains-task-list li>div,
+.tiptap ul.task-list li>div,
+.tiptap .task-list li>div,
+.tiptap li[data-type="taskItem"]>div,
+.tiptap .task-item>div,
+.tiptap ul[data-type="taskList"] li>p,
+.tiptap ul.contains-task-list li>p,
+.tiptap ul.task-list li>p,
+.tiptap .task-list li>p,
+.tiptap li[data-type="taskItem"]>p,
+.tiptap .task-item>p {
+  flex: 1 1 auto;
+}
+
+.tiptap input[type="checkbox"] {
+  cursor: pointer;
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 0.25em;
+  accent-color: #004aad;
+}
+
+/* Sticky Note */
+.tiptap .sticky-note,
+.tiptap [data-type="stickyNote"],
+.tiptap .sticky,
+.tiptap [data-sticky],
+.tiptap .note,
+.tiptap div[style*="background"][style*="#fef3c7"],
+.tiptap div[style*="background"][style*="yellow"] {
+  background: #fef3c7 !important;
+  border-left: 4px solid #f59e0b;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tiptap .sticky-note p:last-child,
+.tiptap [data-type="stickyNote"] p:last-child,
+.tiptap .sticky p:last-child,
+.tiptap [data-sticky] p:last-child,
+.tiptap .note p:last-child {
+  margin-bottom: 0;
+}
+
+/* 2 Columns Layout */
+.tiptap .columns-2,
+.tiptap [data-type="columns"][data-columns="2"],
+.tiptap .layout-2-columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+
+  .tiptap .columns-2,
+  .tiptap [data-type="columns"][data-columns="2"],
+  .tiptap .layout-2-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 3 Columns Layout */
+.tiptap .columns-3,
+.tiptap [data-type="columns"][data-columns="3"],
+.tiptap .layout-3-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 1024px) {
+
+  .tiptap .columns-3,
+  .tiptap [data-type="columns"][data-columns="3"],
+  .tiptap .layout-3-columns {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+
+  .tiptap .columns-3,
+  .tiptap [data-type="columns"][data-columns="3"],
+  .tiptap .layout-3-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Column Item */
+.tiptap .column,
+.tiptap [data-type="column"] {
+  min-width: 0;
+}
+
+/* Collapsible Container */
+.tiptap details,
+.tiptap .collapsible,
+.tiptap [data-type="details"] {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: #f9fafb;
+}
+
+.tiptap details summary,
+.tiptap .collapsible summary {
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tiptap details summary::-webkit-details-marker {
+  display: none;
+}
+
+.tiptap details summary::before {
+  content: '▶';
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.tiptap details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.tiptap details[open] {
+  background: white;
+}
+
+/* Code Block */
+.tiptap pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.tiptap pre code {
+  background: none;
+  color: inherit;
+  font-size: 0.875rem;
+  padding: 0;
+}
+
+/* Inline Code */
+.tiptap code {
+  background: #f1f5f9;
+  color: #dc2626;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+/* Blockquote */
+.tiptap blockquote {
+  border-left: 4px solid #004aad;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #4b5563;
+}
+
+/* Table */
+.tiptap table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+.tiptap table td,
+.tiptap table th {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.tiptap table th {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.tiptap table tr:hover {
+  background: #f9fafb;
+}
+
+/* Horizontal Rule */
+.tiptap hr {
+  border: none;
+  border-top: 2px solid #e5e7eb;
+  margin: 2rem 0;
+}
+
+/* Embed / iframe */
+.tiptap iframe,
+.tiptap .embed-container {
+  max-width: 100%;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* YouTube Video */
+.tiptap .youtube-video,
+.tiptap [data-youtube-video] {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+}
+
+.tiptap .youtube-video iframe,
+.tiptap [data-youtube-video] iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Equation / Math */
+.tiptap .math-inline,
+.tiptap .katex {
+  font-size: 1.1em;
+}
+
+.tiptap .math-display {
+  display: block;
+  margin: 1.5rem 0;
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* Highlight */
+.tiptap mark {
+  background: #fef08a;
+  padding: 0.1em 0.2em;
+  border-radius: 0.2em;
+}
+
+/* Text Alignment */
+.tiptap .text-left {
+  text-align: left;
+}
+
+.tiptap .text-center {
+  text-align: center;
+}
+
+.tiptap .text-right {
+  text-align: right;
+}
+
+.tiptap .text-justify {
+  text-align: justify;
+}
+
+/* Background Colors */
+.tiptap [style*="background"] {
+  padding: 0.1em 0.3em;
+  border-radius: 0.2em;
+}
+
+/* Figma Embed */
+.tiptap .figma-embed,
+.tiptap [data-figma-document] {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  min-height: 450px;
+}
+
+/* Twitter/X Embed */
+.tiptap .twitter-tweet,
+.tiptap [data-twitter-tweet] {
+  margin: 1.5rem auto !important;
+  max-width: 550px;
+}
+
+/* Poll */
+.tiptap .poll,
+.tiptap [data-type="poll"] {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  background: #f9fafb;
+}
+
+.tiptap .poll-option {
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tiptap .poll-option:hover {
+  background: #f3f4f6;
+  border-color: #004aad;
+}
+
+/* Date */
+.tiptap .date,
+.tiptap [data-type="date"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+/* General TipTap Content Spacing */
+.tiptap>*+* {
+  margin-top: 0.75em;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3,
+.tiptap h4,
+.tiptap h5,
+.tiptap h6 {
+  line-height: 1.3;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.tiptap p {
+  margin-bottom: 1em;
+}
+
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.tiptap li {
+  margin-bottom: 0.5rem;
+}
+
+.tiptap a {
+  color: #004aad;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.tiptap a:hover {
+  color: #003882;
+}
+
+/* Cloud Storage Image Support (Google Drive, Dropbox, OneDrive, etc.) */
+.tiptap img[src*="drive.google.com"],
+.tiptap img[src*="dropbox.com"],
+.tiptap img[src*="onedrive.live.com"],
+.tiptap img[src*="1drv.ms"],
+.prose img[src*="drive.google.com"],
+.prose img[src*="dropbox.com"],
+.prose img[src*="onedrive.live.com"],
+.prose img[src*="1drv.ms"],
+.blog-content img[src*="drive.google.com"],
+.blog-content img[src*="dropbox.com"],
+.blog-content img[src*="onedrive.live.com"],
+.blog-content img[src*="1drv.ms"] {
+  @apply max-w-full h-auto rounded-lg shadow-md;
+  display: block;
+  margin: 1.5rem auto;
+  object-fit: contain;
+  background: #f3f4f6;
+  min-height: 200px;
+}
+
+/* Loading state for images */
+.tiptap img,
+.prose img,
+.blog-content img {
+  @apply transition-opacity duration-300;
+}
+
+.tiptap img[loading],
+.prose img[loading],
+.blog-content img[loading] {
+  @apply opacity-50;
+}
+
+/* Image error handling */
+.tiptap img[alt]::after,
+.prose img[alt]::after,
+.blog-content img[alt]::after {
+  content: attr(alt);
+  display: block;
+  text-align: center;
+  padding: 2rem;
+  background: #f3f4f6;
+  color: #6b7280;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}

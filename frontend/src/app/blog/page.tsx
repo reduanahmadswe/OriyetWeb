@@ -122,17 +122,18 @@ export default function BlogPage() {
                   <Link key={post.id} href={`/blog/${post.slug}`} className="block h-full">
                     <article className="group bg-white rounded-2xl overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-2xl hover:shadow-blue-900/5 transition-all duration-300 h-full border border-gray-100 flex flex-col hover:-translate-y-1">
                       {post.thumbnail ? (
-                        <div className="relative h-56 w-full overflow-hidden flex-shrink-0">
+                        <div className="relative h-60 w-full overflow-hidden flex-shrink-0">
                           <Image
                             src={getImageUrl(post.thumbnail)}
                             alt={post.title}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-700"
+                            unoptimized={post.thumbnail?.includes('drive.google.com') || post.thumbnail?.includes('docs.google.com')}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </div>
                       ) : (
-                        <div className="relative h-56 w-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <div className="relative h-60 w-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                           <Image src="/images/placeholder-blog.jpg" alt="Blog" fill className="object-cover opacity-50" />
                         </div>
                       )}

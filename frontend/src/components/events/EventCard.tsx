@@ -171,13 +171,14 @@ export default function EventCard({ event, variant = 'default', className }: Eve
       )}>
 
         {/* Image Section - Top - Compact Aspect Ratio */}
-        <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100">
+        <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-50">
           <Image
             src={thumbnailSrc}
             alt={event.title}
             fill
             unoptimized={thumbnailSrc.startsWith('data:')}
-            className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+            className="object-contain group-hover:scale-105 transition-transform duration-700 ease-out p-1"
+            referrerPolicy="no-referrer"
           />
 
           {/* Gradient Overlay on Hover */}

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { getImageUrl } from '@/lib/utils';
 import { Card } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -124,8 +125,13 @@ export default function OpportunityDetailPage() {
         <div className="container mx-auto px-4 py-8 max-w-4xl">
             <Card className="p-8 mb-8">
                 {opportunity.banner && (
-                    <div className="w-full h-64 md:h-80 relative mb-8 rounded-lg overflow-hidden">
-                        <img src={opportunity.banner} alt={opportunity.title} className="w-full h-full object-cover" />
+                    <div className="w-full relative mb-8 rounded-lg overflow-hidden shadow-lg border border-gray-100 bg-gray-50 max-w-xl mx-auto">
+                        <img
+                            src={getImageUrl(opportunity.banner)}
+                            alt={opportunity.title}
+                            className="w-full h-auto"
+                            referrerPolicy="no-referrer"
+                        />
                     </div>
                 )}
                 <div className="flex justify-between items-start mb-6">

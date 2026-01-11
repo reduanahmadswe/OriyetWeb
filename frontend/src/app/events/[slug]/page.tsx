@@ -281,7 +281,7 @@ export default function EventDetailsPage() {
           <div className="prose prose-gray max-w-none">
             <div dangerouslySetInnerHTML={{ __html: event.description }} />
           </div>
-          
+
           {/* Participant Instructions */}
           {event.participant_instructions && (
             <div className="mt-6 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
@@ -346,13 +346,13 @@ export default function EventDetailsPage() {
           {event.guests && event.guests.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {event.guests.map((guest: any, index: number) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="group relative bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)] transition-all duration-500 ease-out hover:-translate-y-2"
                 >
                   {/* Gradient Overlay on Hover */}
                   <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${guest.role === 'speaker' ? 'bg-gradient-to-br from-blue-500/5 to-indigo-500/5' : 'bg-gradient-to-br from-emerald-500/5 to-teal-500/5'}`} />
-                  
+
                   <div className="relative p-6 md:p-8">
                     {/* Profile Section */}
                     <div className="flex items-start gap-5">
@@ -398,7 +398,7 @@ export default function EventDetailsPage() {
                         <div className="flex flex-wrap gap-2">
                           {/* Email Button */}
                           {guest.email && (
-                            <a 
+                            <a
                               href={`mailto:${guest.email}`}
                               className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-600 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                             >
@@ -406,10 +406,10 @@ export default function EventDetailsPage() {
                               <span>Email</span>
                             </a>
                           )}
-                          
+
                           {/* Website Button */}
                           {guest.website && (
-                            <a 
+                            <a
                               href={guest.website}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -420,10 +420,10 @@ export default function EventDetailsPage() {
                               <ExternalLink className="w-3 h-3" />
                             </a>
                           )}
-                          
+
                           {/* CV Button */}
                           {guest.cvLink && (
-                            <a 
+                            <a
                               href={guest.cvLink}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -471,13 +471,12 @@ export default function EventDetailsPage() {
             {/* Main Content */}
             <div className="lg:col-span-2 order-2 lg:order-1">
               {/* Event Image */}
-              <div className="aspect-video relative rounded-xl sm:rounded-2xl overflow-hidden bg-gray-100 shadow-sm">
-                <Image
+              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-gray-100 bg-gray-50 max-w-xl mx-auto">
+                <img
                   src={event.thumbnail ? getImageUrl(event.thumbnail) : '/images/event-placeholder.svg'}
                   alt={event.title}
-                  fill
-                  className="object-cover"
-                  priority
+                  className="w-full h-auto"
+                  referrerPolicy="no-referrer"
                 />
                 {isPast && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center backdrop-blur-[2px]">
@@ -835,7 +834,7 @@ export default function EventDetailsPage() {
             You have successfully registered for <span className="font-semibold">{event?.title}</span>.
             Check your email for confirmation details.
           </p>
-          
+
           {/* Participant Instructions */}
           {event?.participant_instructions && (
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left">
@@ -848,7 +847,7 @@ export default function EventDetailsPage() {
               </div>
             </div>
           )}
-          
+
           <div className="flex gap-3">
             <Button
               variant="outline"

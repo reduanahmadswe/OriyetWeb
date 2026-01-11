@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/utils';
 import { adminAPI } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Spinner } from '@/components/ui';
 import { toast } from 'react-hot-toast';
@@ -46,7 +47,7 @@ export default function CreateEventPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: async (data: FormData) => {
+    mutationFn: async (data: any) => {
       const response = await adminAPI.createEvent(data);
       return response.data;
     },
@@ -669,12 +670,10 @@ export default function CreateEventPage() {
                 {thumbnailUrl && (
                   <div className="relative rounded-xl overflow-hidden border border-gray-200">
                     <img
-                      src={thumbnailUrl}
+                      src={getImageUrl(thumbnailUrl)}
                       alt="Thumbnail preview"
                       className="w-full h-48 object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
+                      referrerPolicy="no-referrer"
                     />
                   </div>
                 )}

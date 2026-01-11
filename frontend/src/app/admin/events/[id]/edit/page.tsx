@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/utils';
 import { adminAPI } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Loading, Spinner } from '@/components/ui';
 import { toast } from 'react-hot-toast';
@@ -72,15 +73,15 @@ export default function EditEventPage() {
       console.log('Event guests:', event.guests);
       console.log('Guests is array:', Array.isArray(event.guests));
       console.log('Guests length:', event.guests?.length);
-      
+
       setRealEventId(event.id);
 
       // Parse venue from venueDetails JSON
       let venueName = '';
       if (event.venueDetails) {
         try {
-          const venueData = typeof event.venueDetails === 'string' 
-            ? JSON.parse(event.venueDetails) 
+          const venueData = typeof event.venueDetails === 'string'
+            ? JSON.parse(event.venueDetails)
             : event.venueDetails;
           venueName = venueData.name || venueData.venue || '';
         } catch (e) {
@@ -756,12 +757,10 @@ export default function EditEventPage() {
                 {thumbnailUrl && (
                   <div className="relative rounded-xl overflow-hidden border border-gray-200">
                     <img
-                      src={thumbnailUrl}
+                      src={getImageUrl(thumbnailUrl)}
                       alt="Thumbnail preview"
                       className="w-full h-48 object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
+                      referrerPolicy="no-referrer"
                     />
                   </div>
                 )}

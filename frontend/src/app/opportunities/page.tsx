@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { getImageUrl } from '@/lib/utils';
 import { Card } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
@@ -105,8 +106,13 @@ export default function OpportunitiesPage() {
                             {opportunities.map((opp) => (
                                 <Card key={opp.id} padding="none" className="hover:shadow-lg transition-shadow bg-white flex flex-col justify-between overflow-hidden border border-gray-100 rounded-xl">
                                     {opp.banner && (
-                                        <div className="relative h-48 w-full">
-                                            <img src={opp.banner} alt={opp.title} className="w-full h-full object-cover" />
+                                        <div className="relative h-48 w-full bg-gray-50">
+                                            <img
+                                                src={getImageUrl(opp.banner)}
+                                                alt={opp.title}
+                                                className="w-full h-full object-contain p-2"
+                                                referrerPolicy="no-referrer"
+                                            />
                                             <div className="absolute top-4 left-4">
                                                 <Badge variant={opp.type === 'INTERNSHIP' ? 'primary' : 'secondary'} className="shadow-sm">
                                                     {opp.type}

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Twitter, Linkedin, Eye } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Clock, Share2, Facebook, Twitter, Linkedin, Eye, Download } from 'lucide-react';
 import { blogAPI } from '@/lib/api';
 import { formatDate, getImageUrl } from '@/lib/utils';
 import { Loading, Badge } from '@/components/ui';
@@ -20,6 +20,18 @@ export default function BlogPostPage() {
     },
     enabled: !!slug,
   });
+
+  // PDF Download Function using browser's print
+  const handleDownloadPDF = () => {
+    if (typeof window === 'undefined') return;
+
+    // Create a print-friendly version
+    const printContent = document.getElementById('blog-content-pdf');
+    if (!printContent) return;
+
+    // Open print dialog
+    window.print();
+  };
 
   const { data: relatedPosts } = useQuery({
     queryKey: ['related-posts', slug],
@@ -88,36 +100,6 @@ export default function BlogPostPage() {
             <p className="text-lg sm:text-xl text-gray-500 mb-8 leading-relaxed max-w-3xl">
               {post.excerpt}
             </p>
-
-            {/* Author & Meta Grid */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 py-6 border-t border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#004aad] to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-900/10 relative overflow-hidden">
-                  {post.author?.avatar ? (
-                    <Image src={getImageUrl(post.author.avatar)} alt={post.author.name} fill className="object-cover" />
-                  ) : (
-                    (post.author?.name || 'U').charAt(0).toUpperCase()
-                  )}
-                </div>
-                <div>
-                  <div className="font-bold text-gray-900">{post.author?.name || 'ORIYET Team'}</div>
-                  <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">Author</div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-gray-500">
-                <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full">
-                  <Calendar className="w-4 h-4 text-[#004aad]" />
-                  <span className="font-medium">{formatDate(post.publishedAt)}</span>
-                </div>
-                {post.views > 0 && (
-                  <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full">
-                    <Eye className="w-4 h-4 text-[#004aad]" />
-                    <span className="font-medium">{post.views} views</span>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -125,7 +107,7 @@ export default function BlogPostPage() {
       {/* Featured Image */}
       {post.thumbnail && (
         <div className="container-custom -mt-8 sm:-mt-12 relative z-10 px-4 sm:px-6">
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <div className="aspect-video relative rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl shadow-gray-200/50 block bg-gray-200">
               <Image
                 src={getImageUrl(post.thumbnail)}
@@ -133,6 +115,8 @@ export default function BlogPostPage() {
                 fill
                 className="object-cover"
                 priority
+                // Disable optimization for Google Drive images to avoid server-side fetching issues
+                unoptimized={post.thumbnail?.includes('drive.google.com') || post.thumbnail?.includes('docs.google.com')}
               />
             </div>
           </div>
@@ -141,104 +125,108 @@ export default function BlogPostPage() {
 
       {/* Main Content Area */}
       <section className="container-custom pt-12 pb-20">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Article Body */}
-          <article className="prose prose-base sm:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-[#004aad] prose-img:rounded-2xl">
-            <div className="blog-content">
-              {post.content?.split('\n').map((line: string, index: number) => {
-                // Headings
-                if (line.startsWith('## ')) {
-                  return <h2 key={index} className="text-2xl sm:text-3xl mt-12 mb-6">{line.replace('## ', '')}</h2>;
-                }
-                if (line.startsWith('### ')) {
-                  return <h3 key={index} className="text-xl sm:text-2xl mt-8 mb-4">{line.replace('### ', '')}</h3>;
-                }
-                if (line.startsWith('#### ')) {
-                  return <h4 key={index} className="text-lg sm:text-xl mt-6 mb-3">{line.replace('#### ', '')}</h4>;
-                }
-
-                // Lists
-                if (line.startsWith('- ')) {
-                  return (
-                    <ul key={index} className="list-disc pl-5 mb-2">
-                      <li className="text-gray-700 leading-relaxed md:leading-loose">
-                        {line.replace('- ', '')}
-                      </li>
-                    </ul>
-
-                  );
-                }
-
-                // Bold text
-                const boldText = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-bold">$1</strong>');
-
-                // Empty lines
-                if (line.trim() === '') {
-                  return <div key={index} className="h-6"></div>;
-                }
-
-                // Regular paragraphs
-                return (
-                  <p
-                    key={index}
-                    className="text-gray-700 leading-relaxed md:leading-loose mb-6"
-                    dangerouslySetInnerHTML={{ __html: boldText }}
-                  />
-                );
-              })}
-            </div>
+          <article id="blog-content-pdf" className="prose prose-base sm:prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-a:text-[#004aad] prose-img:rounded-2xl">
+            <div
+              className="blog-content tiptap"
+              dangerouslySetInnerHTML={{ __html: post.content || '' }}
+            />
           </article>
 
-          {/* Tags Footer */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-gray-100">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm font-bold text-gray-900 uppercase tracking-wide">Tags:</span>
-                {(typeof post.tags === 'string' ? post.tags.split(',').map((t: string) => t.trim()) : post.tags).map((tag: string) => (
-                  <Link
-                    key={tag}
-                    href={`/blog?tag=${tag}`}
-                    className="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-[#004aad] hover:text-white transition-all"
-                  >
-                    #{tag}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Author, Tags & Share Section - Unified Design */}
+          <div className="mt-12 pt-8 border-t border-gray-100">
+            {/* Author & Meta Information */}
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#004aad] to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-blue-900/10 relative overflow-hidden">
+                    {post.author?.avatar ? (
+                      <Image src={getImageUrl(post.author.avatar)} alt={post.author.name} fill className="object-cover" />
+                    ) : (
+                      (post.author?.name || 'U').charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Written by</div>
+                    <div className="font-bold text-gray-900 text-lg">{post.author?.name || 'ORIYET Team'}</div>
+                  </div>
+                </div>
 
-          {/* Share Section */}
-          <div className="mt-8 pt-8 border-t border-gray-100">
-            <div className="bg-[#f8faff] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div>
-                <h4 className="font-bold text-gray-900 text-lg mb-1">Share this article</h4>
-                <p className="text-sm text-gray-500">Spread the knowledge with your network</p>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                    <Calendar className="w-4 h-4 text-[#004aad]" />
+                    <span className="font-medium text-sm text-gray-700">{formatDate(post.publishedAt)}</span>
+                  </div>
+                  {post.views > 0 && (
+                    <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                      <Eye className="w-4 h-4 text-[#004aad]" />
+                      <span className="font-medium text-sm text-gray-700">{post.views} views</span>
+                    </div>
+                  )}
+                  {/* PDF Download Button */}
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="no-print inline-flex items-center gap-2 px-4 py-2 bg-[#004aad] hover:bg-[#003882] text-white rounded-full font-medium transition-all shadow-md hover:shadow-lg text-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download PDF
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <a
-                  href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white text-[#1877F2] border border-gray-100 flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
-                >
-                  <Facebook className="w-5 h-5" />
-                </a>
-                <a
-                  href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white text-[#1DA1F2] border border-gray-100 flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
-                >
-                  <Twitter className="w-5 h-5" />
-                </a>
-                <a
-                  href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(post.title)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white text-[#0A66C2] border border-gray-100 flex items-center justify-center hover:scale-110 transition-transform shadow-sm"
-                >
-                  <Linkedin className="w-5 h-5 has-tooltip" />
-                </a>
+
+              {/* Tags */}
+              {post.tags && post.tags.length > 0 && (
+                <div className="pt-6 border-t border-gray-200">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-bold text-gray-700 mr-2">TAGS:</span>
+                    {(typeof post.tags === 'string' ? post.tags.split(',').map((t: string) => t.trim()) : post.tags).map((tag: string) => (
+                      <Link
+                        key={tag}
+                        href={`/blog?tag=${tag}`}
+                        className="px-3 py-1.5 bg-[#004aad]/10 text-[#004aad] rounded-full text-sm font-medium hover:bg-[#004aad] hover:text-white transition-all"
+                      >
+                        #{tag}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Share Section */}
+              <div className="pt-6 border-t border-gray-200 mt-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h4 className="font-bold text-gray-900 text-base mb-1">Share this article</h4>
+                    <p className="text-sm text-gray-500">Spread the knowledge with your network</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-full bg-white text-[#1877F2] border-2 border-gray-200 flex items-center justify-center hover:scale-110 hover:border-[#1877F2] transition-all shadow-sm"
+                    >
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                    <a
+                      href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-full bg-white text-[#1DA1F2] border-2 border-gray-200 flex items-center justify-center hover:scale-110 hover:border-[#1DA1F2] transition-all shadow-sm"
+                    >
+                      <Twitter className="w-5 h-5" />
+                    </a>
+                    <a
+                      href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(post.title)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-11 h-11 rounded-full bg-white text-[#0A66C2] border-2 border-gray-200 flex items-center justify-center hover:scale-110 hover:border-[#0A66C2] transition-all shadow-sm"
+                    >
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -246,7 +234,7 @@ export default function BlogPostPage() {
 
         {/* Related Posts */}
         {relatedPosts && relatedPosts.length > 0 && (
-          <div className="max-w-5xl mx-auto mt-20 sm:mt-24 border-t border-gray-100 pt-12">
+          <div className="max-w-4xl mx-auto mt-20 sm:mt-24 border-t border-gray-100 pt-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8">Related Articles</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
               {relatedPosts.map((relatedPost: any) => (
@@ -259,6 +247,7 @@ export default function BlogPostPage() {
                           alt={relatedPost.title}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          unoptimized={relatedPost.thumbnail?.includes('drive.google.com') || relatedPost.thumbnail?.includes('docs.google.com')}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300">

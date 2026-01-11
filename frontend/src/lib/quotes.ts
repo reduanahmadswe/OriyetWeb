@@ -40,7 +40,7 @@ export const quotes: Quote[] = [
     id: 5,
     quote: "যে ব্যক্তি প্রশ্ন করে সে এক মিনিটের জন্য বোকা, যে প্রশ্ন করে না সে সারাজীবন বোকা থাকে।",
     authorName: "কনফুসিয়াস",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Confucius_Tang_Dynasty.jpg/220px-Confucius_Tang_Dynasty.jpg",
+    authorImage: "https://itibritto.com/wp-content/uploads/2018/07/Alamy.jpg",
     authorDesignation: "চীনা দার্শনিক"
   },
   {
@@ -62,14 +62,14 @@ export const quotes: Quote[] = [
     id: 8,
     quote: "কাল করব বলে যা ফেলে রাখা হয়, তা কখনোই করা হয় না।",
     authorName: "বেঞ্জামিন ফ্রাঙ্কলিন",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/BenFranklinDupworking.png/220px-BenFranklinDupworking.png",
+    authorImage: "https://d25swln94uq8y4.cloudfront.net/media/author_th/A0452.jpg",
     authorDesignation: "আমেরিকান বিজ্ঞানী ও রাজনীতিবিদ"
   },
   {
     id: 9,
     quote: "তোমার কাজকে ভালোবাসো, তাহলে তোমাকে জীবনে একদিনও কাজ করতে হবে না।",
     authorName: "কনফুসিয়াস",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Confucius_Tang_Dynasty.jpg/220px-Confucius_Tang_Dynasty.jpg",
+    authorImage: "https://itibritto.com/wp-content/uploads/2018/07/Alamy.jpg",
     authorDesignation: "চীনা দার্শনিক"
   },
   {
@@ -83,7 +83,7 @@ export const quotes: Quote[] = [
     id: 11,
     quote: "হাজার মাইলের যাত্রা শুরু হয় একটি পদক্ষেপ দিয়ে।",
     authorName: "লাও জু",
-    authorImage: "",
+    authorImage: "https://fs.pbs.com.bd/DIR/Com/PBS/Author/Image/7932.jpg",
     authorDesignation: "চীনা দার্শনিক"
   },
   {
@@ -92,13 +92,6 @@ export const quotes: Quote[] = [
     authorName: "রবীন্দ্রনাথ ঠাকুর",
     authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Rabindranath_Tagore_in_1909.jpg/220px-Rabindranath_Tagore_in_1909.jpg",
     authorDesignation: "বাংলা সাহিত্যের নোবেল বিজয়ী কবি"
-  },
-  {
-    id: 13,
-    quote: "যে জাতি তার ইতিহাস জানে না, সে জাতির ভবিষ্যৎ নেই।",
-    authorName: "শেখ মুজিবুর রহমান",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Sheikh_Mujibur_Rahman_in_1950.jpg/220px-Sheikh_Mujibur_Rahman_in_1950.jpg",
-    authorDesignation: "বাংলাদেশের জাতির পিতা"
   },
   {
     id: 14,
@@ -125,7 +118,7 @@ export const quotes: Quote[] = [
     id: 17,
     quote: "সত্য অনুসন্ধান যদি বিজ্ঞানীর লক্ষ্য হয়, তাহলে তাকে অবশ্যই যা পড়ে তার সবকিছুর শত্রু হতে হবে।",
     authorName: "ইবনুল হাইসাম (আলহাজেন)",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Hazan.png/220px-Hazan.png",
+    authorImage: "https://upload.wikimedia.org/wikipedia/commons/3/36/Ibn_al-Haytham.png",
     authorDesignation: "আরব পদার্থবিদ ও গণিতবিদ - আধুনিক আলোকবিজ্ঞানের জনক"
   },
   {
@@ -139,7 +132,7 @@ export const quotes: Quote[] = [
     id: 19,
     quote: "If learning the truth is the scientist's goal, then he must make himself the enemy of all that he reads.",
     authorName: "Ibn al-Haytham (Alhazen)",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Hazan.png/220px-Hazan.png",
+    authorImage: "https://upload.wikimedia.org/wikipedia/commons/3/36/Ibn_al-Haytham.png",
     authorDesignation: "Arab Physicist & Mathematician - Father of Modern Optics"
   },
   // Education & Knowledge
@@ -147,7 +140,7 @@ export const quotes: Quote[] = [
     id: 20,
     quote: "The more that you read, the more things you will know. The more that you learn, the more places you'll go.",
     authorName: "Dr. Seuss",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Ted_Geisel_NYWTS_2_crop.jpg/220px-Ted_Geisel_NYWTS_2_crop.jpg",
+    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Theodor_Seuss_Geisel_%2801037v%29.jpg/960px-Theodor_Seuss_Geisel_%2801037v%29.jpg",
     authorDesignation: "American Author & Illustrator"
   },
   {
@@ -176,14 +169,14 @@ export const quotes: Quote[] = [
     id: 24,
     quote: "It does not matter how slowly you go as long as you do not stop.",
     authorName: "Confucius",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Confucius_Tang_Dynasty.jpg/220px-Confucius_Tang_Dynasty.jpg",
+    authorImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHr3jNiaTeb0Fx-bmH32OU2LNkoBAl01U0IA&s",
     authorDesignation: "Chinese Philosopher"
   },
   {
     id: 25,
     quote: "Hard work beats talent when talent doesn't work hard.",
     authorName: "Tim Notke",
-    authorImage: "",
+    authorImage: "https://i0.wp.com/i.imgur.com/DaegIXG.jpg",
     authorDesignation: "Basketball Coach"
   },
   {
@@ -208,41 +201,20 @@ export const quotes: Quote[] = [
     authorImage: "",
     authorDesignation: "American Humorist & Writer"
   },
-  {
-    id: 29,
-    quote: "Believe you can and you're halfway there.",
-    authorName: "Theodore Roosevelt",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Theodore_Roosevelt_by_the_Pach_Bros.jpg/220px-Theodore_Roosevelt_by_the_Pach_Bros.jpg",
-    authorDesignation: "26th President of USA"
-  },
   // Bengali Legends
   {
     id: 30,
     quote: "তুমি অধম, তাই বলে আমি উত্তম হইব না কেন?",
     authorName: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Bankim_Chandra_Chattopadhyay.jpg/220px-Bankim_Chandra_Chattopadhyay.jpg",
+    authorImage: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Bankim_Chatttapadhyay.jpg",
     authorDesignation: "বাংলা সাহিত্যের জনক"
-  },
-  {
-    id: 31,
-    quote: "যে নদী হারায় স্রোত, সে নদী মরে যায়।",
-    authorName: "কাজী নজরুল ইসলাম",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Kazi_Nazrul_Islam_%28Agartala%29.jpg/220px-Kazi_Nazrul_Islam_%28Agartala%29.jpg",
-    authorDesignation: "বাংলাদেশের জাতীয় কবি"
-  },
-  {
-    id: 32,
-    quote: "চরিত্র মানুষের অমূল্য সম্পদ।",
-    authorName: "ঈশ্বরচন্দ্র বিদ্যাসাগর",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Ishwar_Chandra_Vidyasagar.jpg/220px-Ishwar_Chandra_Vidyasagar.jpg",
-    authorDesignation: "বাংলার নবজাগরণের অগ্রদূত"
   },
   // Research & Science
   {
     id: 33,
     quote: "Research is to see what everybody else has seen, and to think what nobody else has thought.",
     authorName: "Albert Szent-Györgyi",
-    authorImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Albert_Szent-Gyorgyi.jpg/220px-Albert_Szent-Gyorgyi.jpg",
+    authorImage: "https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcT8aPE2iv8SaFcRKCGNoC9GLYvqMvS21guGBbF71rP4QZeDvJsTVxDA3q3Tj1HsGSWoIvs7FYBiaFSTWlM",
     authorDesignation: "Nobel Prize Winner in Physiology"
   },
   {

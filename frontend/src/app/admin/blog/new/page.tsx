@@ -5,8 +5,48 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import RichTextEditor from '@/components/ui/RichTextEditor';
+import LexicalEditor from '@/components/ui/LexicalEditor';
 import { Image as ImageIcon, Tag, ArrowLeft } from 'lucide-react';
+
+// Function to get Google Drive thumbnail URL (same as newsletter & blog list)
+const getGoogleDriveThumbnailUrl = (url: string) => {
+  if (!url) return '';
+
+  // Check if it's already a direct image URL (not Google Drive)
+  if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) {
+    return url;
+  }
+
+  let fileId = '';
+
+  // Format: https://drive.google.com/file/d/FILE_ID/view
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) {
+    fileId = fileMatch[1];
+  }
+
+  // Format: https://drive.google.com/open?id=FILE_ID
+  if (!fileId) {
+    const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (openMatch) {
+      fileId = openMatch[1];
+    }
+  }
+
+  // Format: https://drive.google.com/uc?id=FILE_ID
+  if (!fileId) {
+    const ucMatch = url.match(/\/uc\?.*id=([a-zA-Z0-9_-]+)/);
+    if (ucMatch) {
+      fileId = ucMatch[1];
+    }
+  }
+
+  if (fileId) {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
+  }
+
+  return url;
+};
 
 export default function NewBlogPostPage() {
   const queryClient = useQueryClient();
@@ -111,16 +151,13 @@ export default function NewBlogPostPage() {
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Content *</label>
                 <div className="border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-primary-500">
-                  <RichTextEditor
+                  <LexicalEditor
                     value={formData.content}
                     onChange={(html) => setFormData({ ...formData, content: html })}
                     placeholder="Write your post content..."
-                    className="bg-white min-h-[300px]"
+                    className="bg-white min-h-[400px]"
                   />
                 </div>
-                <p className="text-xs text-gray-500 mt-2 font-medium bg-gray-50 p-2 rounded-lg border border-gray-100 inline-block">
-                  Rich text formatting is supported
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -192,7 +229,7 @@ export default function NewBlogPostPage() {
 
               <div className="aspect-video w-full bg-gray-50 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center relative">
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={getGoogleDriveThumbnailUrl(imagePreview)} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
                   <div className="text-gray-400 flex flex-col items-center">
                     <ImageIcon className="w-10 h-10 mb-2" />

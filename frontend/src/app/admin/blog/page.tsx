@@ -41,6 +41,47 @@ interface BlogPost {
   updatedAt?: string;
 }
 
+// Function to get Google Drive thumbnail URL (same as newsletter page)
+const getGoogleDriveThumbnailUrl = (url: string) => {
+  if (!url) return '';
+
+  // Check if it's already a direct image URL (not Google Drive)
+  if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) {
+    return url;
+  }
+
+  let fileId = '';
+
+  // Format: https://drive.google.com/file/d/FILE_ID/view
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileMatch) {
+    fileId = fileMatch[1];
+  }
+
+  // Format: https://drive.google.com/open?id=FILE_ID
+  if (!fileId) {
+    const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (openMatch) {
+      fileId = openMatch[1];
+    }
+  }
+
+  // Format: https://drive.google.com/uc?id=FILE_ID
+  if (!fileId) {
+    const ucMatch = url.match(/\/uc\?.*id=([a-zA-Z0-9_-]+)/);
+    if (ucMatch) {
+      fileId = ucMatch[1];
+    }
+  }
+
+  if (fileId) {
+    // Use thumbnail API - same as newsletter page
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
+  }
+
+  return url;
+};
+
 export default function AdminBlogPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -308,9 +349,10 @@ export default function AdminBlogPage() {
                       <div className="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-200 relative">
                         {post.thumbnail ? (
                           <img
-                            src={post.thumbnail}
+                            src={getGoogleDriveThumbnailUrl(post.thumbnail)}
                             alt={post.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            referrerPolicy="no-referrer"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
