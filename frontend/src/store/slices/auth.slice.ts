@@ -55,8 +55,8 @@ export const loginUser = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            Cookies.set('accessToken', accessToken, { expires: 7 });
-            Cookies.set('refreshToken', refreshToken, { expires: 30 });
+            Cookies.set('accessToken', accessToken, { expires: 7, sameSite: 'Lax', path: '/' });
+            Cookies.set('refreshToken', refreshToken, { expires: 30, sameSite: 'Lax', path: '/' });
             return user;
         } catch (error: any) {
             return rejectWithValue(error.message || 'Login failed');

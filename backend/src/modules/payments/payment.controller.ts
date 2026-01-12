@@ -51,11 +51,10 @@ export class PaymentController {
   /**
    * POST /api/payments/verify
    * Verifies payment after redirect from gateway
-   * Rate limited to 10 requests per 5 minutes
+   * NO authentication required - invoice_id provides security
    */
   async verifyPayment(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.id;
       const { invoice_id } = req.body;
 
       // Validation
@@ -63,7 +62,7 @@ export class PaymentController {
         throw new AppError('Valid invoice_id is required', 400);
       }
 
-      const result = await paymentService.verifyPayment(invoice_id.trim(), userId);
+      const result = await paymentService.verifyPayment(invoice_id.trim());
 
       res.status(200).json({
         success: result.success,

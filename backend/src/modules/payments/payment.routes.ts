@@ -52,12 +52,11 @@ router.post(
 /**
  * POST /api/payments/verify
  * Verifies payment after redirect from gateway
- * - Requires authentication
+ * - NO authentication required (invoice_id provides security)
  * - Rate limited to 10 requests per 5 minutes
  */
 router.post(
   '/verify',
-  authenticate,
   verificationRateLimiter,
   asyncHandler(paymentController.verifyPayment.bind(paymentController))
 );
