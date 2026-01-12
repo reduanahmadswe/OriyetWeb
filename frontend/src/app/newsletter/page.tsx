@@ -23,94 +23,94 @@ interface Newsletter {
 // Function to convert Google Drive link to embeddable/viewable format
 const getGoogleDriveViewUrl = (url: string) => {
   if (!url) return '';
-  
+
   // Extract file ID from various Google Drive URL formats
   let fileId = '';
-  
+
   // Format: https://drive.google.com/file/d/FILE_ID/view
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (fileMatch) {
     fileId = fileMatch[1];
   }
-  
+
   // Format: https://drive.google.com/open?id=FILE_ID
   const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (openMatch) {
     fileId = openMatch[1];
   }
-  
+
   // Format: https://drive.google.com/uc?id=FILE_ID
   const ucMatch = url.match(/\/uc\?.*id=([a-zA-Z0-9_-]+)/);
   if (ucMatch) {
     fileId = ucMatch[1];
   }
-  
+
   if (fileId) {
     return `https://drive.google.com/file/d/${fileId}/preview`;
   }
-  
+
   return url;
 };
 
 // Function to get Google Drive direct download URL
 const getGoogleDriveDownloadUrl = (url: string) => {
   if (!url) return '';
-  
+
   let fileId = '';
-  
+
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (fileMatch) {
     fileId = fileMatch[1];
   }
-  
+
   const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (openMatch) {
     fileId = openMatch[1];
   }
-  
+
   const ucMatch = url.match(/\/uc\?.*id=([a-zA-Z0-9_-]+)/);
   if (ucMatch) {
     fileId = ucMatch[1];
   }
-  
+
   if (fileId) {
     return `https://drive.google.com/uc?export=download&id=${fileId}`;
   }
-  
+
   return url;
 };
 
 // Function to get Google Drive thumbnail URL
 const getGoogleDriveThumbnailUrl = (url: string) => {
   if (!url) return '';
-  
+
   // Check if it's already a direct image URL (not Google Drive)
   if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) {
     return url;
   }
-  
+
   let fileId = '';
-  
+
   const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (fileMatch) {
     fileId = fileMatch[1];
   }
-  
+
   const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (openMatch) {
     fileId = openMatch[1];
   }
-  
+
   const ucMatch = url.match(/\/uc\?.*id=([a-zA-Z0-9_-]+)/);
   if (ucMatch) {
     fileId = ucMatch[1];
   }
-  
+
   if (fileId) {
     // Use thumbnail API - same as admin page
     return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
   }
-  
+
   return url;
 };
 
@@ -173,23 +173,23 @@ export default function NewsletterPage() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[#004aad]">
               Newsletter
             </h1>
-            
+
             {/* Ibn al-Haytham Quote with Image */}
             <div className="flex flex-col items-center gap-4 my-6">
-              
+
               <p className="text-lg md:text-xl text-orange-500 font-semibold italic text-center">
-                "If learning the truth is the scientist's goal, then he must make himself the enemy of all that he reads" <br/>
+                "If learning the truth is the scientist's goal, then he must make himself the enemy of all that he reads" <br />
                 <span className="text-base">— Ibn al-Haytham (Alhazen)</span>
               </p>
               <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-orange-500/20 shadow-lg">
-                <img 
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtGKl_g7zmuelIML-QAl3Beo1c21XyGyamyQ2o9rOsYebMK0mfGKXSvi9benHI5ejNmNagtgiPEK5hnOL7SMLaPOBxaDUhbux_I0ZfSeo&s=10" 
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtGKl_g7zmuelIML-QAl3Beo1c21XyGyamyQ2o9rOsYebMK0mfGKXSvi9benHI5ejNmNagtgiPEK5hnOL7SMLaPOBxaDUhbux_I0ZfSeo&s=10"
                   alt="Ibn al-Haytham (Alhazen)"
                   className="w-full h-full object-cover"
                 />
               </div>
             </div>
-            
+
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Stay informed with our latest updates, events, and important information
             </p>
@@ -203,7 +203,7 @@ export default function NewsletterPage() {
           <div className="max-w-5xl mx-auto">
             {/* Main Info Card */}
             <div className="relative bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-              
+
               <div className="p-8 md:p-12">
                 {/* Title with icon */}
                 <div className="text-center mb-10">
@@ -211,11 +211,11 @@ export default function NewsletterPage() {
                     <Newspaper className="w-8 h-8 text-white" />
                   </div>
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                    What is a Newsletter?
+                    নিউজলেটার কী?
                   </h2>
                   <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-                    Our newsletter is a regular publication where we share all our organizational activities, 
-                    upcoming events, success stories, and important announcements.
+                    আমাদের নিউজলেটার একটি নিয়মিত প্রকাশনা যেখানে আমরা আমাদের সাংগঠনিক কার্যক্রম,
+                    আসন্ন ইভেন্ট, সাফল্যের গল্প এবং গুরুত্বপূর্ণ ঘোষণাগুলো শেয়ার করি।
                   </p>
                 </div>
 
@@ -229,24 +229,24 @@ export default function NewsletterPage() {
                       </div>
                       <div>
                         <h3 className="font-bold text-lg text-[#004aad] mb-3">
-                          Why Read Our Newsletter?
+                          কেন আমাদের নিউজলেটার পড়বেন?
                         </h3>
                         <ul className="space-y-2.5">
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
-                            Stay updated on latest events & programs
+                            সর্বশেষ ইভেন্ট এবং প্রোগ্রাম সম্পর্কে আপডেট থাকুন
                           </li>
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
-                            Get notified about new opportunities
+                            নতুন সুযোগ সম্পর্কে নোটিফিকেশন পান
                           </li>
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
-                            Learn from successful participants' experiences
+                            সফল অংশগ্রহণকারীদের অভিজ্ঞতা থেকে শিখুন
                           </li>
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#004aad] rounded-full"></span>
-                            Stay connected with our community
+                            আমাদের কমিউনিটির সাথে যুক্ত থাকুন
                           </li>
                         </ul>
                       </div>
@@ -261,24 +261,24 @@ export default function NewsletterPage() {
                       </div>
                       <div>
                         <h3 className="font-bold text-lg text-[#ff7620] mb-3">
-                          What's Inside the Newsletter?
+                          নিউজলেটারের ভেতরে কী আছে?
                         </h3>
                         <ul className="space-y-2.5">
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
-                            Highlights & photos from past events
+                            অতীতের ইভেন্টের হাইলাইট এবং ছবি
                           </li>
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
-                            Detailed info about upcoming programs
+                            আসন্ন প্রোগ্রাম সম্পর্কে বিস্তারিত তথ্য
                           </li>
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
-                            Educational articles & tips
+                            শিক্ষণীয় আর্টিকেল এবং টিপস
                           </li>
                           <li className="flex items-center gap-2 text-gray-600">
                             <span className="w-1.5 h-1.5 bg-[#ff7620] rounded-full"></span>
-                            Special announcements & offers
+                            বিশেষ ঘোষণা এবং অফার
                           </li>
                         </ul>
                       </div>
@@ -347,16 +347,15 @@ export default function NewsletterPage() {
             </div>
           ) : data?.newsletters?.length > 0 ? (
             <>
-              <div className={`grid gap-8 ${
-                data.newsletters.length === 1 
-                  ? 'grid-cols-1 max-w-md mx-auto' 
-                  : data.newsletters.length === 2 
+              <div className={`grid gap-8 ${data.newsletters.length === 1
+                  ? 'grid-cols-1 max-w-md mx-auto'
+                  : data.newsletters.length === 2
                     ? 'grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto'
                     : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-              }`}>
+                }`}>
                 {data.newsletters.map((newsletter: Newsletter) => (
-                  <article 
-                    key={newsletter.id} 
+                  <article
+                    key={newsletter.id}
                     className="group bg-white rounded-2xl overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-300 border border-gray-100 flex flex-col hover:-translate-y-1"
                   >
                     {/* Thumbnail */}
@@ -468,7 +467,7 @@ export default function NewsletterPage() {
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">No newsletters found</h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                {search 
+                {search
                   ? "No newsletters match your search. Try different keywords."
                   : "There are no newsletters available at the moment. Please check back later."}
               </p>
@@ -480,7 +479,7 @@ export default function NewsletterPage() {
       {/* PDF Viewer Modal */}
       {viewingNewsletter && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setViewingNewsletter(null)}
           />
@@ -510,7 +509,7 @@ export default function NewsletterPage() {
                 </button>
               </div>
             </div>
-            
+
             {/* PDF Viewer */}
             <div className="flex-1 overflow-hidden bg-white">
               <iframe

@@ -16,16 +16,24 @@ export const validate = (validations: ValidationChain[]) => {
       message: err.msg,
     }));
 
-    // Create a readable error message
-    const fieldMessages = formattedErrors.map(err => {
-      const fieldName = err.field.charAt(0).toUpperCase() + err.field.slice(1);
-      return `${fieldName}: ${err.message}`;
+    // Group errors by field for easier frontend handling
+    const errorsByField: Record<string, string[]> = {};
+    formattedErrors.forEach(err => {
+      if (!errorsByField[err.field]) {
+        errorsByField[err.field] = [];
+      }
+      errorsByField[err.field].push(err.message);
     });
+
+    // Create a user-friendly main error message
+    const firstError = formattedErrors[0];
+    const mainMessage = firstError ? firstError.message : 'Validation failed';
 
     res.status(400).json({
       success: false,
-      message: fieldMessages.join(' | '),
+      message: mainMessage,
       errors: formattedErrors,
+      errorsByField, // Grouped errors for easier field-specific display
     });
   };
 };
