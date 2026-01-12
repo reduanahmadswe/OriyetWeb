@@ -1,0 +1,48 @@
+/**
+ * OTP Cleanup Cron Job
+ * Automatically removes expired OTP codes from database
+ * 
+ * Schedule: Every 10 minutes
+ * Purpose: Clean up expired OTPs to keep database clean
+ */
+
+import cron from 'node-cron';
+import prisma from '../config/db.js';
+
+export const otpCleanupCron = cron.schedule(
+  '*/10 * * * *', // Every 10 minutes
+  async () => {
+    try {
+      console.log('[CRON] Starting OTP cleanup...');
+      
+      // Delete OTPs that expired more than 50 minutes ago
+      const fiftyMinutesAgo = new Date(Date.now() - 50 * 60 * 1000);
+      
+      const result = await prisma.otpCode.deleteMany({
+        where: {
+          expiresAt: {
+            lt: fiftyMinutesAgo
+          }
+        }
+      });
+      
+      console.log(`[CRON] OTP cleanup completed: ${result.count} expired OTPs removed`);
+    } catch (error) {
+      console.error('[CRON] OTP cleanup error:', error);
+    }
+  },
+  {
+    scheduled: false, // Don't start automatically
+    timezone: 'Asia/Dhaka',
+  }
+);
+
+export const startOtpCleanup = () => {
+  console.log('[CRON] OTP cleanup job started');
+  otpCleanupCron.start();
+};
+
+export const stopOtpCleanup = () => {
+  console.log('[CRON] OTP cleanup job stopped');
+  otpCleanupCron.stop();
+};
