@@ -25,7 +25,21 @@ const requestOtpSchema = z.object({
 const resetPasswordSchema = z
     .object({
         otp: z.string().min(6, "OTP must be 6 digits"),
-        newPassword: z.string().min(6, "Password must be at least 6 characters"),
+        newPassword: z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .refine((p) => /[A-Z]/.test(p), {
+                message: 'Password must contain at least one uppercase letter (A-Z)',
+            })
+            .refine((p) => /[a-z]/.test(p), {
+                message: 'Password must contain at least one lowercase letter (a-z)',
+            })
+            .refine((p) => /\d/.test(p), {
+                message: 'Password must contain at least one number (0-9)',
+            })
+            .refine((p) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(p), {
+                message: 'Password must contain at least one special character (!@#$%^&*)',
+            }),
         confirmPassword: z.string(),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
@@ -213,7 +227,7 @@ export default function ForgotPasswordPage() {
                             </label>
                             <input
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="Min 8 chars, A-Z, a-z, 0-9, !@#$"
                                 className="w-full px-5 py-3.5 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
                                 {...registerStep2("newPassword")}
                             />
@@ -230,7 +244,7 @@ export default function ForgotPasswordPage() {
                             </label>
                             <input
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="Re-enter your password"
                                 className="w-full px-5 py-3.5 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
                                 {...registerStep2("confirmPassword")}
                             />

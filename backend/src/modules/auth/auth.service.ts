@@ -54,11 +54,17 @@ export class AuthService {
       ]);
 
       if (existingUser) {
-        throw new AppError('This email is already registered. Please login or use a different email.', 400);
+        throw new AppError('This email is already registered. Please login or use a different email.', 400, [
+          { field: 'email', message: 'This email is already registered. Please login or use a different email.' }
+        ]);
       }
 
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Clean phone number - remove spaces, dashes, parentheses
+      // Store in consistent format: +1234567890
+      const cleanedPhone = phone ? phone.replace(/[\s\-()]/g, '') : undefined;
 
       // Delete old pending registration if exists
       if (pendingReg) {
@@ -71,7 +77,7 @@ export class AuthService {
 
       // Store registration data temporarily (expires in 30 minutes)
       const regExpiresAt = getExpirationTimeUTC(30);
-      
+
       await prisma.$transaction(async (tx) => {
         // Create pending registration
         await tx.pendingRegistration.create({
@@ -79,7 +85,7 @@ export class AuthService {
             email,
             password: hashedPassword,
             name,
-            phone,
+            phone: cleanedPhone,
             expiresAt: regExpiresAt,
           },
         });
@@ -105,12 +111,35 @@ export class AuthService {
       if (error instanceof AppError) {
         throw error;
       }
-      
+
+      // Handle Prisma unique constraint violations
+      if (error.code === 'P2002') {
+        const target = error.meta?.target;
+        if (target && target.includes('email')) {
+          throw new AppError('This email is already registered. Please use a different email or login.', 400, [
+            { field: 'email', message: 'This email is already registered. Please use a different email or login.' }
+          ]);
+        }
+        if (target && target.includes('phone')) {
+          throw new AppError('This phone number is already registered. Please use a different number.', 400, [
+            { field: 'phone', message: 'This phone number is already registered. Please use a different number.' }
+          ]);
+        }
+        throw new AppError('This information is already registered. Please use different details.', 400);
+      }
+
       // Handle database connection errors
       if (error.message?.includes('does not exist') || error.message?.includes('database')) {
         throw new AppError('Unable to connect to the registration service. Please try again later.', 503);
       }
-      
+
+      // Handle email sending errors
+      if (error.message?.includes('email') || error.message?.includes('SMTP')) {
+        throw new AppError('Unable to send verification email. Please check your email address and try again.', 500, [
+          { field: 'email', message: 'Unable to send verification email. Please check your email address and try again.' }
+        ]);
+      }
+
       // Handle any other unexpected errors
       console.error('Registration error:', error);
       throw new AppError('An error occurred during registration. Please try again.', 500);
@@ -195,22 +224,48 @@ export class AuthService {
   }
 
   async resendOTP(email: string) {
+    // Check if this is a pending registration (user hasn't verified email yet)
+    const pendingReg = await prisma.pendingRegistration.findUnique({
+      where: { email },
+      select: { email: true },
+    });
+
+    // If pending registration exists, send OTP for registration verification
+    if (pendingReg) {
+      const otp = generateOTP();
+      const expiresAt = getExpirationTimeUTC(2); // 2 minutes for registration
+
+      await prisma.otpCode.create({
+        data: {
+          email,
+          code: otp,
+          type: 'verification',
+          expiresAt,
+        },
+      });
+
+      await sendOTPEmail(email, otp, 'verification');
+
+      return { message: 'OTP sent successfully' };
+    }
+
+    // Otherwise, check if user exists (for already registered but unverified users)
     const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, isVerified: true },
     });
 
     if (!user) {
-      throw new AppError('User not found', 404);
+      throw new AppError('No registration found for this email. Please register first.', 404);
     }
 
     if (user.isVerified) {
       throw new AppError('Email already verified', 400);
     }
 
-    // Generate new OTP
+    // Generate new OTP for existing unverified user
     const otp = generateOTP();
-    const expiresAt = getExpirationTimeUTC(10);
+    const expiresAt = getExpirationTimeUTC(10); // 10 minutes for existing users
 
     await prisma.otpCode.create({
       data: {
@@ -336,12 +391,12 @@ export class AuthService {
       if (error instanceof AppError) {
         throw error;
       }
-      
+
       // Handle database connection errors
       if (error.message?.includes('does not exist') || error.message?.includes('database')) {
         throw new AppError('Unable to connect to the authentication service. Please try again later.', 503);
       }
-      
+
       // Handle any other unexpected errors
       console.error('Login error:', error);
       throw new AppError('An error occurred during login. Please try again.', 500);
@@ -381,7 +436,7 @@ export class AuthService {
     if (token && user.twoFactorEnabled && user.twoFactorSecret) {
       isValid = TwoFactorUtil.verifyToken(user.twoFactorSecret, token);
     }
-    
+
     // Try email OTP if authenticator failed or not provided
     if (!isValid && otp && user.emailOtpEnabled) {
       isValid = await OTPUtil.verifyOTP(email, otp, 'login');
@@ -418,7 +473,7 @@ export class AuthService {
     try {
       // Reinitialize client with current env values to ensure fresh credentials
       googleClient = new OAuth2Client(env.google.clientId);
-      
+
       const ticket = await googleClient.verifyIdToken({
         idToken,
         audience: env.google.clientId,
@@ -494,7 +549,7 @@ export class AuthService {
     } catch (error: any) {
       console.error('Google Auth Error Detail:', error);
       if (error instanceof AppError) throw error;
-      
+
       // User-friendly error messages
       if (error.message?.includes('Wrong recipient') || error.message?.includes('audience')) {
         throw new AppError('Google sign-in configuration error. Please contact support.', 400);
@@ -502,7 +557,7 @@ export class AuthService {
       if (error.message?.includes('Token used too late') || error.message?.includes('expired')) {
         throw new AppError('Google sign-in session expired. Please try again.', 400);
       }
-      
+
       throw new AppError('Unable to sign in with Google. Please try again or use email/password.', 400);
     }
   }
