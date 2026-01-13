@@ -88,8 +88,8 @@ export const paymentRateLimiter = createRateLimiter({
 });
 
 export const verificationRateLimiter = createRateLimiter({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  maxRequests: 10, // 10 verification attempts per 5 minutes
+  windowMs: 5 * 60 * 1000, // 10 minutes
+  maxRequests: 10, // 10 verification attempts per 10 minutes
   message: 'Too many verification attempts. Please wait before trying again.',
 });
 

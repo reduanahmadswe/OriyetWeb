@@ -356,6 +356,11 @@ export class PaymentService {
     let verifyData: UddoktaPayVerifyResponse;
     const config = await this._getPaymentConfig();
 
+    console.log('[VERIFY] Sending request to UddoktaPay:', {
+      url: config.verifyUrl,
+      invoice_id: invoiceId
+    });
+
     try {
       const response = await axios.post<UddoktaPayVerifyResponse>(
         config.verifyUrl,
@@ -371,43 +376,87 @@ export class PaymentService {
       );
 
       verifyData = response.data;
-      console.log('[VERIFY] Gateway response:', { invoiceId, status: verifyData.status });
+      console.log('[VERIFY] Gateway RAW response:', JSON.stringify(verifyData, null, 2));
+
     } catch (error: any) {
-      console.error('[VERIFY] Gateway error:', error.response?.data || error.message);
-      throw new AppError('Failed to verify payment with gateway', 502);
+      console.error('[VERIFY] Gateway FAILED:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+
+      // Handle specific gateway errors
+      if (error.response?.status === 404) {
+        throw new AppError('Transaction ID not found - This payment does not exist or matches no records.', 404);
+      }
+
+      if (error.response?.status === 400) {
+        throw new AppError('Invalid payment request parameters.', 400);
+      }
+
+      throw new AppError('Payment gateway temporarily unavailable. Please try again.', 502);
     }
 
     // -------------------------------------------------------------------------
     // 2.2 CHECK PAYMENT STATUS
     // -------------------------------------------------------------------------
+
+    // ⭐ STRICT VALIDATION: Ensure metadata exists
+    // If the gateway returns a response without metadata (even if 200 OK), it's invalid for us
+    if (!verifyData.metadata || !verifyData.metadata.transaction_id) {
+      console.error('[VERIFY] Invalid gateway response - missing metadata:', verifyData);
+      throw new AppError('Transaction ID not found - Invalid response from gateway.', 404);
+    }
+
     if (verifyData.status === 'PENDING') {
       return {
         success: false,
         status: 'PENDING',
-        message: 'Payment is still being processed. Please wait a few moments and try again.',
+        message: 'Payment is still being processed. Please wait a few moments...',
       };
     }
 
-    // ⭐ NEW: If payment failed/cancelled, delete transaction immediately
+    // ⭐ NEW: Handle Failed/Cancelled Payments & Retry Limits
     if (verifyData.status === 'ERROR' || verifyData.status !== 'COMPLETED') {
       const { metadata } = verifyData;
-      
+
       if (metadata?.transaction_id) {
         try {
-          // Delete payment transaction from database (no record kept)
-          await prisma.paymentTransaction.deleteMany({
+          const transaction = await prisma.paymentTransaction.findFirst({
             where: { transactionId: metadata.transaction_id }
           });
-          console.log('[VERIFY] Deleted failed/cancelled transaction:', metadata.transaction_id);
+
+          if (transaction) {
+            // Increment attempt count
+            const updatedTx = await prisma.paymentTransaction.update({
+              where: { id: transaction.id },
+              data: { verificationAttempts: { increment: 1 } }
+            });
+
+            // Check retry limit (5 attempts)
+            if (updatedTx.verificationAttempts > this.MAX_VERIFICATION_ATTEMPTS) {
+              // Delete explicitly if max retries exceeded to cleanup
+              await prisma.paymentTransaction.delete({ where: { id: transaction.id } });
+
+              return {
+                success: false,
+                status: 'FAILED',
+                message: 'Max verification attempts exceeded. Transaction cancelled.',
+              };
+            }
+          } else {
+            // Transaction likely already cleaned up
+            throw new AppError('Transaction expired or cleaned up.', 404);
+          }
         } catch (cleanupError) {
-          console.error('[VERIFY] Cleanup failed:', cleanupError);
+          console.error('[VERIFY] Error updating transaction stats:', cleanupError);
         }
       }
 
       return {
         success: false,
         status: 'FAILED',
-        message: 'Payment failed or was cancelled. No record has been kept. You can try again.',
+        message: 'Payment failed or was cancelled.',
       };
     }
 
@@ -820,6 +869,13 @@ export class PaymentService {
       throw new AppError('Can only refund completed payments', 400);
     }
 
+    if (!transaction.registrationId) {
+      throw new AppError('Transaction is completed but missing registration ID', 500);
+    }
+
+    // Capture registrationId as a non-null number for use in the transaction block
+    const registrationId = transaction.registrationId;
+
     await prisma.$transaction(async (tx) => {
       // Update payment
       await tx.paymentTransaction.update({
@@ -834,7 +890,7 @@ export class PaymentService {
 
       // Unenroll user
       await tx.eventRegistration.update({
-        where: { id: transaction.registrationId },
+        where: { id: registrationId },
         data: {
           status: 'refunded',
           paymentStatus: 'refunded',
@@ -844,30 +900,34 @@ export class PaymentService {
       });
 
       // Decrement participant count
-      await tx.event.update({
-        where: { id: transaction.registration.event.id },
-        data: { currentParticipants: { decrement: 1 } },
-      });
+      if (transaction.registration?.event?.id) {
+        await tx.event.update({
+          where: { id: transaction.registration.event.id },
+          data: { currentParticipants: { decrement: 1 } },
+        });
+      }
 
       // Revoke certificates
-      if (transaction.registration.certificates.length > 0) {
+      if (transaction.registration?.certificates && transaction.registration.certificates.length > 0) {
         await tx.certificate.deleteMany({
-          where: { registrationId: transaction.registrationId },
+          where: { registrationId },
         });
       }
     });
 
     // Send refund notification
-    try {
-      await sendRefundNotification(
-        transaction.registration.user.email,
-        transaction.registration.user.name,
-        transaction.registration.event.title,
-        transaction.amount,
-        reason
-      );
-    } catch (error) {
-      console.error('[REFUND] Email error:', error);
+    if (transaction.registration?.user?.email && transaction.registration?.event?.title) {
+      try {
+        await sendRefundNotification(
+          transaction.registration.user.email,
+          transaction.registration.user.name,
+          transaction.registration.event.title,
+          transaction.amount,
+          reason
+        );
+      } catch (error) {
+        console.error('[REFUND] Email error:', error);
+      }
     }
 
     console.log('[REFUND] Payment refunded:', { transactionId, adminId, reason });

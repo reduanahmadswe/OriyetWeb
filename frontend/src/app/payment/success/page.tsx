@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { paymentAPI } from '@/lib/api';
@@ -11,24 +12,41 @@ export default function PaymentSuccessPage() {
   const router = useRouter();
   const invoiceId = searchParams.get('invoice_id');
 
-  const { data, isLoading, error, isError } = useQuery({
+  // ---------------------------------------------------------------------------
+  // CONSOLE LOGGING & DEBUGGING
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (invoiceId) {
+      console.log(`%c[PAYMENT VERIFY] Starting verification for Invoice ID: ${invoiceId}`, 'color: blue; font-weight: bold;');
+    }
+  }, [invoiceId]);
+
+  const { data, isLoading, error, isError, refetch } = useQuery({
     queryKey: ['payment-verify', invoiceId],
     queryFn: async () => {
       if (!invoiceId) throw new Error('No invoice ID provided');
-      const response = await paymentAPI.verify(invoiceId);
-      return response.data;
+
+      console.log(`[PAYMENT VERIFY] Requesting backend verification...`);
+
+      try {
+        const response = await paymentAPI.verify(invoiceId);
+        console.log(`%c[PAYMENT VERIFY] SUCCESS! Response:`, 'color: green; font-weight: bold;', response.data);
+        return response.data;
+      } catch (err: any) {
+        console.error(`%c[PAYMENT VERIFY] FAILED! Error:`, 'color: red; font-weight: bold;', err.response?.data || err.message);
+        throw err;
+      }
     },
     enabled: !!invoiceId,
-    retry: 3,
-    // Poll every 2 seconds if status is PENDING
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      if (data?.status === 'PENDING') return 2000;
-      return false;
-    },
+    retry: false, // ⭐ No automatic retries - User must click "Retry" manually
+    refetchOnWindowFocus: false, // Don't verify just because user switched tabs
   });
 
   const isPending = data?.status === 'PENDING' || data?.data?.status === 'PENDING';
+
+  // ---------------------------------------------------------------------------
+  // UI STATES
+  // ---------------------------------------------------------------------------
 
   if (!invoiceId) {
     return (
@@ -50,32 +68,32 @@ export default function PaymentSuccessPage() {
     );
   }
 
-  // Show loading state for initial load OR if payment is still pending (polling)
-  if (isLoading || isPending) {
+  // 1. LOADING STATE
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="bg-white p-10 rounded-[2rem] shadow-xl text-center max-w-md w-full">
           <Loader2 className="w-16 h-16 text-[#003366] animate-spin mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {isPending ? 'Finalizing Transaction...' : 'Verifying Payment...'}
-          </h1>
-          <p className="text-gray-500 text-lg">
-            {isPending
-              ? 'Please wait while we confirm your payment.'
-              : 'Confirming details with the gateway.'}
-          </p>
-          {isPending && (
-            <div className="mt-6 p-4 bg-blue-50 text-blue-800 text-sm rounded-xl">
-              Please do not close this window.
-            </div>
-          )}
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Verifying Payment...</h1>
+          <p className="text-gray-500 text-lg">Communicating with payment gateway...</p>
         </div>
       </div>
     );
   }
 
+  // 2. ERROR STATE (Including 404 Not Found, 400 Bad Request)
   if (isError || !data?.success) {
-    const errorMessage = data?.message || (error as any)?.message || 'Payment verification failed';
+    const errorObj = error as any;
+    const isNotFound = errorObj?.response?.status === 404;
+
+    let title = 'Payment Failed';
+    let errorMessage = data?.message || errorObj?.message || 'Payment verification failed.';
+
+    // Customize message for 404 (Not Found)
+    if (isNotFound) {
+      title = 'Transaction Not Found';
+      errorMessage = "We could not find this payment. It may not exist or has expired.";
+    }
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -83,23 +101,26 @@ export default function PaymentSuccessPage() {
           <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 ring-8 ring-red-50/50">
             <XCircle className="w-10 h-10 text-red-500" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-            Payment Failed
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">{title}</h1>
           <p className="text-gray-600 mb-8 text-lg leading-relaxed">{errorMessage}</p>
 
           <div className="flex flex-col gap-3">
+            {/* Always allow Retry */}
+            <button
+              onClick={() => {
+                console.log('[PAYMENT VERIFY] User clicked Retry Manual');
+                refetch();
+              }}
+              className="inline-flex items-center justify-center w-full px-6 py-4 bg-[#003366] text-white font-bold rounded-xl hover:bg-[#002244] transition-all"
+            >
+              Try Again
+            </button>
+
             <Link
               href="/events"
               className="inline-flex items-center justify-center w-full px-6 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all"
             >
               Browse Events
-            </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center w-full px-6 py-4 bg-[#003366] text-white font-bold rounded-xl hover:bg-[#002244] transition-all"
-            >
-              Go to Dashboard
             </Link>
           </div>
         </div>
