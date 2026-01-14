@@ -84,22 +84,9 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-[1.5rem] border border-gray-100 shadow-sm mt-10">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">User Management</h1>
-          <p className="text-sm sm:text-base text-gray-500 mt-1">Manage user roles, statuses, and permissions.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="w-full sm:w-auto bg-blue-50 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-bold border border-blue-100 flex items-center justify-center">
-            <Users className="w-4 h-4 mr-2" />
-            Total Users: {data?.pagination?.total || 0}
-          </div>
-        </div>
-      </div>
-
+      
       {/* Main Content Card */}
-      <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm overflow-hidden flex flex-col h-full">
+      <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm overflow-hidden flex flex-col h-full mt-10">
         {/* Filters and Search */}
         <div className="p-4 sm:p-5 border-b border-gray-100 space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -121,6 +108,13 @@ export default function AdminUsersPage() {
                 </button>
               ))}
             </div>
+
+            <div className="flex items-center gap-3">
+          <div className="w-full sm:w-auto bg-blue-50 text-blue-700 px-4 py-2.5 rounded-xl text-sm font-bold border border-blue-100 flex items-center justify-center">
+            <Users className="w-4 h-4 mr-2" />
+            Total Users: {data?.pagination?.total || 0}
+          </div>
+        </div>
 
             {/* Search */}
             <div className="relative w-full lg:w-72">

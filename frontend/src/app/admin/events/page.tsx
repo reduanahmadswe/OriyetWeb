@@ -114,7 +114,7 @@ export default function AdminEventsPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-      
+
       {/* Main Content Card */}
       <div className="bg-white border border-gray-100 rounded-[1.5rem] shadow-sm overflow-hidden flex flex-col h-full mt-10">
         {/* Filters and Search */}
@@ -139,28 +139,31 @@ export default function AdminEventsPage() {
               ))}
             </div>
 
-            
 
-            {/* Search */}
-            <div className="relative w-full lg:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search events..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50 border border-transparent focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 rounded-xl transition-all outline-none"
-              />
+
+            {/* Right Side: Search and Create Button */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+              {/* Search */}
+              <div className="relative w-full lg:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-50 border border-transparent focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 rounded-xl transition-all outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Link href="/admin/events/new" className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto rounded-xl shadow-lg shadow-primary-500/20 justify-center">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Event
+                  </Button>
+                </Link>
+              </div>
             </div>
-
-            <div className="flex items-center gap-3">
-          <Link href="/admin/events/new" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto rounded-xl shadow-lg shadow-primary-500/20 justify-center">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Event
-            </Button>
-          </Link>
-        </div>
           </div>
         </div>
 
