@@ -70,13 +70,13 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
+          <div className="hidden lg:flex items-center space-x-1 xl:space-x-4">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  'relative px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300',
+                  'relative px-3 xl:px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap',
                   pathname === item.href
                     ? 'text-[#004aad] bg-[#004aad]/10'
                     : 'text-gray-600 hover:text-[#004aad] hover:bg-gray-50'
@@ -85,16 +85,16 @@ export default function Navbar() {
                 {item.name}
               </Link>
             ))}
-            
+
             {/* More Dropdown */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setMoreMenuOpen(true)}
               onMouseLeave={() => setMoreMenuOpen(false)}
             >
               <button
                 className={cn(
-                  'relative px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-1',
+                  'relative px-3 xl:px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-1 whitespace-nowrap',
                   moreMenuItems.some(item => pathname === item.href)
                     ? 'text-[#004aad] bg-[#004aad]/10'
                     : 'text-gray-600 hover:text-[#004aad] hover:bg-gray-50'
@@ -106,7 +106,7 @@ export default function Navbar() {
                   moreMenuOpen && 'rotate-180'
                 )} />
               </button>
-              
+
               {moreMenuOpen && (
                 <div className="absolute right-0 pt-2 z-50">
                   <div className="w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2">
@@ -132,12 +132,12 @@ export default function Navbar() {
           </div>
 
           {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
             {isAuthenticated && user ? (
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+                  className="flex items-center space-x-2 xl:space-x-3 px-3 xl:px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white text-sm font-bold shadow-md overflow-hidden relative">
                     {user.avatar ? (
@@ -151,7 +151,7 @@ export default function Navbar() {
                       (user?.name?.charAt(0) ?? user?.email?.charAt(0) ?? 'U').toUpperCase()
                     )}
                   </div>
-                  <span className="text-sm font-semibold text-gray-800">{user.name || user.email?.split('@')[0]}</span>
+                  <span className="text-sm font-semibold text-gray-800 hidden xl:block">{user.name || user.email?.split('@')[0]}</span>
                   <ChevronDown className={cn(
                     'w-4 h-4 text-gray-500 transition-transform',
                     userMenuOpen && 'rotate-180'
@@ -282,7 +282,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
@@ -311,7 +311,7 @@ export default function Navbar() {
                   {item.name}
                 </Link>
               ))}
-              
+
               {/* More Dropdown in Mobile */}
               <div className="relative">
                 <button
@@ -329,7 +329,7 @@ export default function Navbar() {
                     moreMenuOpen && 'rotate-180'
                   )} />
                 </button>
-                
+
                 {moreMenuOpen && (
                   <div className="bg-gray-50 rounded-lg mt-1 border-l-2 border-blue-500 ml-2">
                     {moreMenuItems.map((item) => (
