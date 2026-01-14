@@ -3,9 +3,20 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { usePathname } from 'next/navigation';
 import { ReduxProvider } from '@/store/ReduxProvider';
 import { useAppDispatch } from '@/store/hooks';
 import { checkAuth } from '@/store/slices/auth.slice';
+
+function ScrollToTop() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function AuthInitializer({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
@@ -40,6 +51,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <ReduxProvider>
       <QueryClientProvider client={queryClient}>
         <AuthInitializer>
+          <ScrollToTop />
           {children}
           <Toaster
             position="top-right"

@@ -150,9 +150,8 @@ export class BlogService {
 
     if (status) {
       where.status = status;
-    } else {
-      where.status = 'published';
     }
+    // If no status is provided, show all posts (don't filter by status)
 
     if (search) {
       where.OR = [
@@ -172,6 +171,7 @@ export class BlogService {
           thumbnail: true,
           status: true,
           views: true,
+          tags: true,
           publishedAt: true,
           createdAt: true,
           author: {
@@ -188,14 +188,27 @@ export class BlogService {
       prisma.blogPost.count({ where }),
     ]);
 
+    // Get stats
+    const [totalPosts, publishedCount, draftCount] = await Promise.all([
+      prisma.blogPost.count(),
+      prisma.blogPost.count({ where: { status: 'published' } }),
+      prisma.blogPost.count({ where: { status: 'draft' } }),
+    ]);
+
     const postsWithAuthor = posts.map((post: any) => ({
       ...post,
       author_name: post.author?.name,
+      tags: post.tags ? post.tags.split(',').map((t: string) => t.trim()).filter(Boolean) : [],
     }));
 
     return {
       posts: postsWithAuthor,
       pagination: getPaginationMeta(total, page, limit),
+      stats: {
+        total: totalPosts,
+        published: publishedCount,
+        drafts: draftCount,
+      },
     };
   }
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import {
   Plus,
   Edit2,
@@ -137,9 +138,13 @@ export default function AdminBlogPage() {
 
   const toggleStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: 'draft' | 'published' }) =>
-      api.put(`/blogs/${id}/status`, { status }),
-    onSuccess: () => {
+      api.put(`/blogs/${id}/status`, { status }).then(res => res.data),
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin-blog'] });
+      toast.success(`Post ${variables.status === 'published' ? 'published' : 'drafted'} successfully!`);
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update post status');
     },
   });
 
@@ -382,7 +387,8 @@ export default function AdminBlogPage() {
                         id: post.id,
                         status: post.status === 'published' ? 'draft' : 'published'
                       })}
-                      className="cursor-pointer hover:opacity-80 transition-opacity"
+                      disabled={toggleStatusMutation.isPending}
+                      className="cursor-pointer hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Badge variant={post.status === 'published' ? 'success' : 'warning'} className="capitalize px-2.5 py-0.5 font-bold">
                         {post.status === 'published' ? (

@@ -307,11 +307,11 @@ export default function AdminNewsletterPage() {
                             )}
                           </div>
                           <div className="min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate max-w-xs">
+                            <h3 className="font-semibold text-sm text-gray-900 truncate max-w-xs">
                               {newsletter.title}
                             </h3>
                             {newsletter.description && (
-                              <p className="text-sm text-gray-500 truncate max-w-xs">
+                              <p className="text-xs text-gray-500 truncate max-w-xs">
                                 {newsletter.description}
                               </p>
                             )}
