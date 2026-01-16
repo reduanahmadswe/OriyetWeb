@@ -30,10 +30,13 @@ export default function GoogleCallbackPage() {
       }
 
       try {
+        const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/+$/, '');
+        const redirectUri = `${siteUrl}/auth/google/callback`;
+
         // Exchange authorization code for tokens via backend
         const response = await api.post('/auth/google/callback', {
           code,
-          redirectUri: `${window.location.origin}/auth/google/callback`,
+          redirectUri,
         });
 
         const { user, accessToken, refreshToken } = response.data;

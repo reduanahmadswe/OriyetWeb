@@ -176,7 +176,8 @@ export default function RegisterPage() {
     // Trigger Google OAuth redirect
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (clientId) {
-      const redirectUri = `${window.location.origin}/auth/google/callback`;
+      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/+$/, '');
+      const redirectUri = `${siteUrl}/auth/google/callback`;
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${clientId}&` +
         `redirect_uri=${encodeURIComponent(redirectUri)}&` +
