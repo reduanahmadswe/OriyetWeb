@@ -34,6 +34,7 @@ model User {
   paymentTransactions PaymentTransaction[]
   certificates        Certificate[]
   blogPosts           BlogPost[]
+  reviews             Review[]
 
   @@map("users")
 }
@@ -121,6 +122,7 @@ model Event {
   registrations EventRegistration[]
   certificates  Certificate[]
   eventHosts    EventHost[]
+  reviews       Review[]
 
   @@map("events")
 }
@@ -359,4 +361,25 @@ model Newsletter {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("newsletters")
+}
+
+model Review {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  eventId         Int      @map("event_id")
+  rating          Int      // 1-5 stars
+  comment         String?  @db.Text
+  isApproved      Boolean  @default(false) @map("is_approved")
+  isFeatured      Boolean  @default(false) @map("is_featured")
+  approvedAt      DateTime? @map("approved_at")
+  approvedBy      Int?     @map("approved_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([isApproved, isFeatured])
+  @@map("reviews")
 }

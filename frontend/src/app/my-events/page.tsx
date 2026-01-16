@@ -15,18 +15,22 @@ import {
     AlertCircle,
     ExternalLink,
     PlayCircle,
-    ArrowRight
+    ArrowRight,
+    Star
 } from 'lucide-react';
 import { eventAPI, certificateAPI } from '@/lib/api';
 import { useAppSelector } from '@/store/hooks';
 import { formatDate, formatDateTime, getImageUrl, getEventTypeLabel } from '@/lib/utils';
 import { Badge, Button, Loading, Tabs, Modal, Card, CardContent } from '@/components/ui';
+import { ReviewModal } from '@/components/reviews/ReviewModal';
 
 export default function MyEventsPage() {
     const router = useRouter();
     const { user, isAuthenticated } = useAppSelector((state) => state.auth);
     const [generatingId, setGeneratingId] = useState<number | null>(null);
     const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [selectedEventForReview, setSelectedEventForReview] = useState<any>(null);
     const queryClient = useQueryClient();
 
     // Redirect if not authenticated
@@ -201,6 +205,19 @@ export default function MyEventsPage() {
                                     </button>
                                 )}
 
+                                {(event.eventStatus === 'completed' || status === 'completed') && !event.has_reviewed && (
+                                    <button
+                                        onClick={() => {
+                                            setSelectedEventForReview(event);
+                                            setReviewModalOpen(true);
+                                        }}
+                                        className="inline-flex items-center justify-center px-4 py-2.5 text-sm font-bold text-yellow-600 bg-yellow-50 border border-transparent rounded-xl hover:bg-yellow-100 transition-all w-full sm:w-auto"
+                                    >
+                                        <Star className="w-4 h-4 mr-2" />
+                                        Write Review
+                                    </button>
+                                )}
+
                                 {hasCertificate && (event.eventStatus === 'completed' || status === 'completed') && (
                                     <>
                                         {certificateId ? (
@@ -316,6 +333,21 @@ export default function MyEventsPage() {
                     )}
                 </div>
             </Modal>
+
+            {selectedEventForReview && (
+                <ReviewModal
+                    isOpen={reviewModalOpen}
+                    onClose={() => {
+                        setReviewModalOpen(false);
+                        setSelectedEventForReview(null);
+                    }}
+                    eventId={selectedEventForReview.id}
+                    eventTitle={selectedEventForReview.title}
+                    onSuccess={() => {
+                        queryClient.invalidateQueries({ queryKey: ['my-events'] });
+                    }}
+                />
+            )}
         </div>
     );
 }

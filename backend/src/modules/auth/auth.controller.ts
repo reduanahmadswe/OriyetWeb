@@ -56,6 +56,15 @@ export class AuthController {
     });
   });
 
+  googleAuthCallback = asyncHandler(async (req: Request, res: Response) => {
+    const { code, redirectUri } = req.body;
+    const result = await authService.googleAuthCallback(code, redirectUri);
+    res.json({
+      success: true,
+      ...result,
+    });
+  });
+
   refreshToken = asyncHandler(async (req: Request, res: Response) => {
     const { refreshToken } = req.body;
     const result = await authService.refreshToken(refreshToken);

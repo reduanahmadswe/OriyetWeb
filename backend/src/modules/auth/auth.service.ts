@@ -562,6 +562,102 @@ export class AuthService {
     }
   }
 
+  async googleAuthCallback(code: string, redirectUri: string) {
+    try {
+      googleClient = new OAuth2Client(
+        env.google.clientId,
+        env.google.clientSecret,
+        redirectUri
+      );
+
+      // Exchange authorization code for tokens
+      const { tokens } = await googleClient.getToken(code);
+      
+      if (!tokens.id_token) {
+        throw new AppError('Failed to get ID token from Google', 400);
+      }
+
+      // Verify the ID token
+      const ticket = await googleClient.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: env.google.clientId,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        throw new AppError('Google sign-in failed. Please try again.', 400);
+      }
+
+      const { email, name, picture, sub: googleId } = payload;
+
+      // Check if user exists
+      let user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: email! },
+            { googleId },
+          ],
+        },
+      });
+
+      if (!user) {
+        // Create new user
+        user = await prisma.user.create({
+          data: {
+            email: email!,
+            name: name!,
+            avatar: picture,
+            googleId,
+            authProvider: 'google',
+            isVerified: true,
+            isActive: true,
+          },
+        });
+      } else {
+        // Update Google ID if not set
+        if (!user.googleId) {
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              googleId,
+              avatar: picture,
+            },
+          });
+        }
+      }
+
+      if (!user.isActive) {
+        throw new AppError('Your account has been deactivated', 403);
+      }
+
+      const userTokens = generateTokens({
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      });
+
+      await this.storeRefreshToken(user.id, userTokens.refreshToken);
+
+      return {
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          phone: user.phone,
+          avatar: user.avatar,
+          role: user.role,
+        },
+        ...userTokens,
+      };
+    } catch (error: any) {
+      console.error('Google Callback Error:', error);
+      if (error instanceof AppError) throw error;
+
+      throw new AppError('Unable to complete Google sign-in. Please try again.', 400);
+    }
+  }
+
   async refreshToken(refreshToken: string) {
     try {
       const decoded = verifyRefreshToken(refreshToken);

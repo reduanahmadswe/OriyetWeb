@@ -194,7 +194,7 @@ export default function ProfilePage() {
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    value={isEditing ? formData.name : (profileData?.name || '')}
+                    value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={!isEditing}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
@@ -223,14 +223,14 @@ export default function ProfilePage() {
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="tel"
-                    value={isEditing ? formData.phone : (profileData?.phone || user?.phone || '')}
+                    value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     disabled={!isEditing}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
-                    placeholder={isEditing ? "Enter phone number" : ((profileData?.phone || user?.phone) ? "" : "Not provided")}
+                    placeholder={formData.phone ? "" : "Enter phone number"}
                   />
                 </div>
-                {!isEditing && !profileData?.phone && !user?.phone && (
+                {!isEditing && !formData.phone && (
                   <p className="mt-1 text-xs text-gray-500">Click "Edit Profile" to add your phone number</p>
                 )}
               </div>
@@ -265,7 +265,9 @@ export default function ProfilePage() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       console.log('Edit button clicked');
                       setSuccessMessage('');
                       setErrorMessage('');

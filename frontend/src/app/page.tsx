@@ -5,6 +5,7 @@ import { getFeaturedEvents, getUpcomingEvents, getRecentBlogs } from '@/services
 import { EventCard } from '@/components/events';
 import Hero from '@/components/home/Hero';
 import SkillsIncomeChart from '@/components/home/SkillsIncomeChart';
+import Testimonials from '@/components/home/Testimonials';
 import type { Metadata } from 'next';
 import Marquee from 'react-fast-marquee';
 
@@ -409,56 +410,7 @@ export default async function HomePage() {
       </section>
 
       {/* 6. Testimonials */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="text-center mb-12 sm:mb-16">
-            <span className="inline-block px-5 py-2 rounded-full bg-[#004aad]/10 text-[#004aad] text-sm font-semibold mb-4">
-              Student Testimonials
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-              What Our Learners Say
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Hear from our learners who have transformed their careers through ORIYET
-            </p>
-          </div>
-
-          {/* Infinite Scrolling Testimonials */}
-          <Marquee speed={30} pauseOnHover gradient={false} direction="left" autoFill>
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="group mx-3 w-[80vw] sm:w-[350px] md:w-[380px] flex-shrink-0 bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-blue-200 hover:-translate-y-1 hover:shadow-xl transition-all duration-500"
-              >
-                {/* Subtle Background on Hover */}
-                <div className="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
-
-                <div className="relative z-10">
-                  <div className="flex items-start gap-4 mb-5">
-                    <div className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-100 group-hover:border-blue-300 transition-colors duration-300 flex-shrink-0">
-                      <Image src={testimonial.image} alt={testimonial.name} fill className="object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-300 truncate">{testimonial.name}</h3>
-                      <p className="text-orange-600 text-xs font-semibold truncate">{testimonial.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-4 h-4 ${i < Math.floor(testimonial.rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}`} />
-                      ))}
-                    </div>
-                    <span className="text-sm font-bold text-gray-700">{testimonial.rating}</span>
-                  </div>
-                  <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 group-hover:text-gray-700 transition-colors duration-300">{testimonial.content}</p>
-                </div>
-              </div>
-            ))}
-          </Marquee>
-        </div>
-      </section>
+      <Testimonials />
 
       {/* 7. Stats Section - Builds Trust */}
       <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-gray-50">

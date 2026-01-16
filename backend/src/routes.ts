@@ -13,6 +13,7 @@ import opportunityRoutes from './modules/opportunities/opportunity.routes.js';
 import testRoutes from './routes/test.routes.js';
 import contactRoutes from './modules/contact/contact.routes.js';
 import newsletterRoutes from './modules/newsletters/newsletter.routes.js';
+import reviewRoutes from './modules/reviews/review.routes.js';
 
 import prisma from './config/db.js';
 
@@ -39,6 +40,7 @@ router.use('/admin', adminRoutes);
 router.use('/opportunities', opportunityRoutes);
 router.use('/contact', contactRoutes);
 router.use('/newsletters', newsletterRoutes);
+router.use('/reviews', reviewRoutes);
 router.use('/test', testRoutes); // Test endpoint for debugging
 
 

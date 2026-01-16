@@ -28,6 +28,9 @@ uploads/*
 *.swp
 *.swo
 
+# Windows reserved files
+backend/nul
+
 # OS files
 .DS_Store
 Thumbs.db

@@ -8,6 +8,7 @@ import {
   verifyEmailValidation,
   resendOTPValidation,
   googleAuthValidation,
+  googleAuthCallbackValidation,
   refreshTokenValidation,
   forgotPasswordValidation,
   resetPasswordValidation,
@@ -25,6 +26,7 @@ router.post('/resend-otp', validate(resendOTPValidation), authController.resendO
 router.post('/login', validate(loginValidation), authController.login);
 router.post('/verify-login-otp', authController.verifyLoginOTP);
 router.post('/google', validate(googleAuthValidation), authController.googleAuth);
+router.post('/google/callback', validate(googleAuthCallbackValidation), authController.googleAuthCallback);
 router.post('/refresh-token', validate(refreshTokenValidation), authController.refreshToken);
 router.post('/forgot-password', validate(forgotPasswordValidation), authController.forgotPassword);
 router.post('/reset-password', validate(resetPasswordValidation), authController.resetPassword);

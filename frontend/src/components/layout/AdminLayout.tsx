@@ -18,7 +18,8 @@ import {
     Briefcase,
     UserPlus,
     UserCog,
-    Newspaper
+    Newspaper,
+    Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -48,6 +49,7 @@ const sidebarItems = [
     { icon: UserPlus, label: 'Applications', href: '/admin/applications' },
     { icon: BookOpen, label: 'Blog', href: '/admin/blog' },
     { icon: Newspaper, label: 'Newsletter', href: '/admin/newsletter' },
+    { icon: Star, label: 'Reviews', href: '/admin/reviews' },
     { icon: UserCog, label: 'Profile', href: '/admin/profile' },
     { icon: Settings, label: 'Settings', href: '/admin/settings' },
 ];

@@ -9,4 +9,8 @@ declare global {
   }
 }
 
+export interface AuthRequest extends Request {
+  user?: JwtPayload & { id: number };
+}
+
 export {};

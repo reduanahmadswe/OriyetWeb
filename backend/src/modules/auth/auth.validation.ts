@@ -109,6 +109,15 @@ export const googleAuthValidation = [
     .withMessage('Google ID token is required'),
 ];
 
+export const googleAuthCallbackValidation = [
+  body('code')
+    .notEmpty()
+    .withMessage('Authorization code is required'),
+  body('redirectUri')
+    .notEmpty()
+    .withMessage('Redirect URI is required'),
+];
+
 export const refreshTokenValidation = [
   body('refreshToken')
     .notEmpty()

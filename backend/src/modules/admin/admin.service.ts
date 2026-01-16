@@ -1068,7 +1068,7 @@ export class AdminService {
 
   // Payment Management
   async getPaymentStats(eventId?: number) {
-    const where = eventId ? { eventId } : {};
+    const where: any = eventId ? { registration: { eventId } } : {};
 
     const [totalRevenue, totalTransactions, successfulTransactions, pendingTransactions] = await Promise.all([
       prisma.paymentTransaction.aggregate({
@@ -1101,7 +1101,7 @@ export class AdminService {
     const where: any = {};
     
     if (eventId) {
-      where.eventId = eventId;
+      where.registration = { eventId };
     }
 
     if (status) {
@@ -1124,11 +1124,8 @@ export class AdminService {
           user: {
             select: { id: true, name: true, email: true },
           },
-          event: {
-            select: { id: true, title: true, slug: true },
-          },
           registration: {
-            select: { registrationNumber: true },
+            include: { event: { select: { id: true, title: true, slug: true } } }
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -1194,11 +1191,8 @@ export class AdminService {
         user: {
           select: { name: true, email: true },
         },
-        event: {
-          select: { title: true },
-        },
         registration: {
-          select: { registrationNumber: true },
+          select: { registrationNumber: true, event: { select: { title: true } } },
         },
       },
       orderBy: { createdAt: 'desc' },

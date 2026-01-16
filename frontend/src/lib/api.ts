@@ -273,3 +273,28 @@ export const adminAPI = {
   get: (endpoint: string) => api.get(`/admin${endpoint}`),
   put: (endpoint: string, data: any) => api.put(`/admin${endpoint}`, data),
 };
+
+// Review APIs
+export const reviewAPI = {
+  // Public
+  getApprovedReviews: (featured?: boolean, limit?: number) => {
+    const params = new URLSearchParams();
+    if (featured !== undefined) params.append('featured', String(featured));
+    if (limit) params.append('limit', String(limit));
+    return api.get(`/reviews/approved?${params.toString()}`);
+  },
+  
+  // User
+  createReview: (data: { eventId: number; rating: number; comment?: string }) => 
+    api.post('/reviews', data),
+  getMyReviews: () => api.get('/reviews/my-reviews'),
+  updateReview: (id: number, data: { rating?: number; comment?: string }) => 
+    api.put(`/reviews/${id}`, data),
+  deleteReview: (id: number) => api.delete(`/reviews/${id}`),
+  
+  // Admin
+  getAllReviews: (params?: any) => api.get('/reviews/all', { params }),
+  getReviewStats: () => api.get('/reviews/stats'),
+  approveReview: (id: number, isApproved: boolean, isFeatured?: boolean) => 
+    api.patch(`/reviews/${id}/approve`, { isApproved, isFeatured }),
+};
