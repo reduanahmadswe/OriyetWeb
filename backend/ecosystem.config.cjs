@@ -4,7 +4,7 @@ module.exports = {
       name: "oriyet-backend",
       cwd: "/root/oriyet/backend",
       script: "npm",
-      args: "start",
+      args: "run dev",
       watch: false,
       autorestart: true,
       env: {
