@@ -37,7 +37,9 @@ jobs:
             echo "[$(date +'%Y-%m-%d %H:%M:%S')] ⚙️ Backend (dev mode)"
             cd backend
             pnpm install
+
             npx prisma migrate deploy
+            npm run build
             pm2 restart oriyet-backend || pm2 start ecosystem.config.cjs --only oriyet-backend
 
 
