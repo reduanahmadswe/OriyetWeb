@@ -20,17 +20,32 @@ export class AdminService {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
     const [totalUsers, newUsers30d, totalEvents, upcomingEvents, totalRegistrations,
-      registrations30d, totalRevenue, revenue30d, totalCertificates] = await Promise.all([
+      registrations30d, transactionRevenue, registrationRevenue, revenue30d, totalCertificates] = await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
         prisma.event.count(),
         prisma.event.count({ where: { eventStatus: 'upcoming' } }),
         prisma.eventRegistration.count(),
         prisma.eventRegistration.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+        // Check PaymentTransaction
         prisma.paymentTransaction.aggregate({
-          where: { status: 'completed' },
+          where: {
+            status: { in: ['completed', 'COMPLETED'] },
+            createdAt: { gte: startOfMonth }
+          },
           _sum: { amount: true },
+        }),
+        // Check EventRegistration as fallback
+        prisma.eventRegistration.aggregate({
+          where: {
+            paymentStatus: { in: ['completed', 'COMPLETED', 'paid'] },
+            createdAt: { gte: startOfMonth }
+          },
+          _sum: { paymentAmount: true }
         }),
         prisma.paymentTransaction.aggregate({
           where: { status: 'completed', createdAt: { gte: thirtyDaysAgo } },
@@ -38,6 +53,11 @@ export class AdminService {
         }),
         prisma.certificate.count(),
       ]);
+
+    // Use transaction revenue if available, otherwise fallback to registration revenue
+    const currentMonthRevenue = (transactionRevenue._sum.amount || 0) > 0
+      ? (transactionRevenue._sum.amount || 0)
+      : (registrationRevenue._sum.paymentAmount || 0);
 
     // Get recent registrations
     const recentRegistrations = await prisma.eventRegistration.findMany({
@@ -66,7 +86,7 @@ export class AdminService {
       upcoming_events: upcomingEvents,
       total_registrations: totalRegistrations,
       registrations_30d: registrations30d,
-      total_revenue: totalRevenue._sum.amount || 0,
+      total_revenue: currentMonthRevenue,
       revenue_30d: revenue30d._sum.amount || 0,
       total_certificates: totalCertificates,
       recentRegistrations: recentRegistrations.map((r: any) => ({
@@ -187,10 +207,12 @@ export class AdminService {
       select: {
         id: true,
         title: true,
+        thumbnail: true,
         eventType: true,
         eventStatus: true,
         startDate: true,
         endDate: true,
+        price: true,
         maxParticipants: true,
         _count: {
           select: {
@@ -249,6 +271,7 @@ export class AdminService {
         return {
           id: event.id,
           title: event.title,
+          thumbnail: event.thumbnail,
           eventType: event.eventType,
           eventStatus: event.eventStatus,
           startDate: event.startDate,
@@ -259,6 +282,7 @@ export class AdminService {
           pending,
           cancelled,
           attended,
+          isFree: Number(event.price) === 0,
           totalRevenue: totalRevenue._sum.amount || 0,
         };
       })
@@ -389,7 +413,9 @@ export class AdminService {
       case 'csv':
         return this.generateCSV(formattedData);
       case 'pdf':
-        return this.generatePDF(formattedData);
+        // Extract event title from the first registration (all should be same event if filtered)
+        const eventTitle = formattedData.length > 0 ? formattedData[0].event_title : 'All Events';
+        return this.generatePDF(formattedData, eventTitle);
       default:
         throw new AppError('Invalid export format', 400);
     }
@@ -423,9 +449,14 @@ export class AdminService {
     };
   }
 
-  private async generatePDF(data: any[]): Promise<{ buffer: Buffer; contentType: string; filename: string }> {
+  private async generatePDF(data: any[], eventTitle: string = 'All Events'): Promise<{ buffer: Buffer; contentType: string; filename: string }> {
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 30, size: 'A4', layout: 'landscape' });
+      const doc = new PDFDocument({
+        margin: 40,
+        size: 'A4',
+        layout: 'landscape',
+        bufferPages: true
+      });
       const chunks: Buffer[] = [];
 
       doc.on('data', chunk => chunks.push(chunk));
@@ -439,43 +470,186 @@ export class AdminService {
       });
       doc.on('error', reject);
 
-      // Title
-      doc.fontSize(16).text('Registration Report', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(10).text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
-      doc.moveDown(2);
+      // Colors
+      const primaryColor = '#3B82F6'; // Blue
+      const headerBg = '#1E40AF'; // Dark Blue
+      const borderColor = '#E5E7EB'; // Light Gray
+      const alternateRowBg = '#F9FAFB'; // Very Light Gray
 
-      // Table header
-      const headers = ['Reg. No', 'Name', 'Email', 'Event', 'Status', 'Payment'];
-      const colWidths = [80, 100, 150, 150, 80, 80];
-      let x = 30;
+      // Title Section with background
+      doc.rect(40, 40, doc.page.width - 80, 80).fill('#F3F4F6');
+      doc.fillColor('#111827')
+        .fontSize(20)
+        .font('Helvetica-Bold')
+        .text('Registration Report', 40, 50, {
+          width: doc.page.width - 80,
+          align: 'center'
+        });
 
-      doc.fontSize(9).font('Helvetica-Bold');
+      // Event Title
+      doc.fontSize(14)
+        .fillColor('#3B82F6')
+        .font('Helvetica-Bold')
+        .text(eventTitle, 40, 75, {
+          width: doc.page.width - 80,
+          align: 'center'
+        });
+
+      doc.fontSize(10)
+        .fillColor('#6B7280')
+        .font('Helvetica')
+        .text(`Generated: ${new Date().toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        })}`, 40, 100, {
+          width: doc.page.width - 80,
+          align: 'center'
+        });
+
+      // Table setup - REMOVED Event column
+      const tableTop = 150;
+      const headers = ['Reg. No', 'Name', 'Email', 'Status', 'Payment'];
+      const colWidths = [140, 150, 240, 100, 100];
+      const tableWidth = colWidths.reduce((a, b) => a + b, 0);
+      const startX = (doc.page.width - tableWidth) / 2;
+
+      let currentY = tableTop;
+
+      // Draw table header background
+      doc.rect(startX, currentY, tableWidth, 30)
+        .fill(headerBg);
+
+      // Draw header text
+      doc.font('Helvetica-Bold')
+        .fontSize(10)
+        .fillColor('#FFFFFF');
+
+      let currentX = startX;
       headers.forEach((header, i) => {
-        doc.text(header, x, doc.y, { width: colWidths[i], continued: i < headers.length - 1 });
-        x += colWidths[i];
+        doc.text(header, currentX + 8, currentY + 10, {
+          width: colWidths[i] - 16,
+          align: 'left'
+        });
+        currentX += colWidths[i];
       });
-      doc.moveDown();
 
-      // Table rows
-      doc.font('Helvetica').fontSize(8);
-      data.slice(0, 50).forEach(row => { // Limit to 50 rows for PDF
-        x = 30;
+      currentY += 30;
+
+      // Draw table rows
+      doc.font('Helvetica').fontSize(9);
+      const limitedData = data.slice(0, 50); // Limit to 50 rows
+
+      limitedData.forEach((row, rowIndex) => {
+        // Check if we need a new page
+        if (currentY > doc.page.height - 100) {
+          doc.addPage({
+            margin: 40,
+            size: 'A4',
+            layout: 'landscape'
+          });
+          currentY = 40;
+
+          // Redraw header on new page
+          doc.rect(startX, currentY, tableWidth, 30).fill(headerBg);
+          doc.font('Helvetica-Bold').fontSize(10).fillColor('#FFFFFF');
+          currentX = startX;
+          headers.forEach((header, i) => {
+            doc.text(header, currentX + 8, currentY + 10, {
+              width: colWidths[i] - 16,
+              align: 'left'
+            });
+            currentX += colWidths[i];
+          });
+          currentY += 30;
+          doc.font('Helvetica').fontSize(9);
+        }
+
+        const rowHeight = 35;
+
+        // Alternate row background
+        if (rowIndex % 2 === 0) {
+          doc.rect(startX, currentY, tableWidth, rowHeight)
+            .fill(alternateRowBg);
+        } else {
+          doc.rect(startX, currentY, tableWidth, rowHeight)
+            .fill('#FFFFFF');
+        }
+
+        // Draw cell borders
+        currentX = startX;
+        colWidths.forEach((width) => {
+          doc.rect(currentX, currentY, width, rowHeight)
+            .stroke(borderColor);
+          currentX += width;
+        });
+
+        // Draw cell content - REMOVED event_title from rowData
         const rowData = [
           row.registration_number || '-',
           row.participant_name || '-',
           row.participant_email || '-',
-          (row.event_title || '-').substring(0, 25),
           row.registration_status || '-',
           row.payment_status || '-',
         ];
 
+        currentX = startX;
+        doc.fillColor('#374151');
+
         rowData.forEach((cell, i) => {
-          doc.text(cell, x, doc.y, { width: colWidths[i], continued: i < rowData.length - 1 });
-          x += colWidths[i];
+          // Status and Payment columns with colored badges
+          if (i === 3) { // Status column (now index 3 instead of 4)
+            const statusColor = cell === 'confirmed' ? '#10B981' :
+              cell === 'pending' ? '#F59E0B' :
+                cell === 'cancelled' ? '#EF4444' : '#6B7280';
+            doc.fillColor(statusColor)
+              .fontSize(8)
+              .font('Helvetica-Bold')
+              .text(cell.toUpperCase(), currentX + 8, currentY + 12, {
+                width: colWidths[i] - 16,
+                align: 'left'
+              });
+          } else if (i === 4) { // Payment column (now index 4 instead of 5)
+            const paymentColor = cell === 'completed' || cell === 'paid' ? '#10B981' :
+              cell === 'pending' ? '#F59E0B' : '#EF4444';
+            doc.fillColor(paymentColor)
+              .fontSize(8)
+              .font('Helvetica-Bold')
+              .text(cell.toUpperCase(), currentX + 8, currentY + 12, {
+                width: colWidths[i] - 16,
+                align: 'left'
+              });
+          } else {
+            doc.fillColor('#374151')
+              .fontSize(9)
+              .font('Helvetica')
+              .text(cell, currentX + 8, currentY + 12, {
+                width: colWidths[i] - 16,
+                align: 'left',
+                ellipsis: true
+              });
+          }
+          currentX += colWidths[i];
         });
-        doc.moveDown(0.5);
+
+        currentY += rowHeight;
       });
+
+      // Draw outer border
+      doc.rect(startX, tableTop, tableWidth, currentY - tableTop)
+        .stroke('#D1D5DB');
+
+      // Footer
+      const totalRecords = data.length;
+      const displayedRecords = limitedData.length;
+      doc.fontSize(9)
+        .fillColor('#6B7280')
+        .font('Helvetica')
+        .text(
+          `Showing ${displayedRecords} of ${totalRecords} total registrations`,
+          40,
+          doc.page.height - 60,
+          { align: 'center', width: doc.page.width - 80 }
+        );
 
       doc.end();
     });
@@ -678,28 +852,28 @@ export class AdminService {
     // Handle thumbnail URL with Google Drive support
     if (data.thumbnailUrl || data.thumbnail) {
       let imageUrl = data.thumbnailUrl || data.thumbnail;
-      
+
       // Convert Google Drive share links to direct image URLs
       if (imageUrl.includes('drive.google.com')) {
         let fileId = null;
-        
+
         // Format: https://drive.google.com/file/d/FILE_ID/view
         const viewMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         if (viewMatch) fileId = viewMatch[1];
-        
+
         // Format: https://drive.google.com/open?id=FILE_ID
         const openMatch = imageUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         if (openMatch) fileId = openMatch[1];
-        
+
         // Format: https://drive.google.com/uc?id=FILE_ID
         const ucMatch = imageUrl.match(/\/uc\?id=([a-zA-Z0-9_-]+)/);
         if (ucMatch) fileId = ucMatch[1];
-        
+
         if (fileId) {
           imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
         }
       }
-      
+
       eventData.thumbnail = imageUrl;
     }
 
@@ -778,36 +952,36 @@ export class AdminService {
     // Handle thumbnail - support both field names and Google Drive links
     if (data.thumbnail || data.thumbnailUrl) {
       let imageUrl = data.thumbnail || data.thumbnailUrl;
-      
+
       // Convert Google Drive share links to direct image URLs
       if (imageUrl.includes('drive.google.com')) {
         // Extract file ID from various Google Drive URL formats
         let fileId = null;
-        
+
         // Format: https://drive.google.com/file/d/FILE_ID/view
         const viewMatch = imageUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         if (viewMatch) {
           fileId = viewMatch[1];
         }
-        
+
         // Format: https://drive.google.com/open?id=FILE_ID
         const openMatch = imageUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         if (openMatch) {
           fileId = openMatch[1];
         }
-        
+
         // Format: https://drive.google.com/uc?id=FILE_ID
         const ucMatch = imageUrl.match(/\/uc\?id=([a-zA-Z0-9_-]+)/);
         if (ucMatch) {
           fileId = ucMatch[1];
         }
-        
+
         if (fileId) {
           // Convert to direct image URL
           imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
         }
       }
-      
+
       eventData.thumbnail = imageUrl;
     }
     if (data.videoLink !== undefined) eventData.videoLink = data.videoLink;
@@ -1099,7 +1273,7 @@ export class AdminService {
     const skip = (page - 1) * limit;
 
     const where: any = {};
-    
+
     if (eventId) {
       where.registration = { eventId };
     }
@@ -1125,7 +1299,12 @@ export class AdminService {
             select: { id: true, name: true, email: true },
           },
           registration: {
-            include: { event: { select: { id: true, title: true, slug: true } } }
+            select: {
+              registrationNumber: true,
+              event: {
+                select: { id: true, title: true, slug: true },
+              },
+            },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -1141,7 +1320,7 @@ export class AdminService {
         transactionId: p.transactionId,
         invoiceId: p.invoiceId,
         user: p.user,
-        event: p.event,
+        event: p.registration?.event,
         registrationNumber: p.registration?.registrationNumber,
         amount: p.amount,
         fee: p.fee || 0,
@@ -1168,9 +1347,9 @@ export class AdminService {
     search?: string;
   }) {
     const where: any = {};
-    
+
     if (params.eventId) {
-      where.eventId = params.eventId;
+      where.registration = { eventId: params.eventId };
     }
 
     if (params.status) {
@@ -1192,7 +1371,12 @@ export class AdminService {
           select: { name: true, email: true },
         },
         registration: {
-          select: { registrationNumber: true, event: { select: { title: true } } },
+          select: {
+            registrationNumber: true,
+            event: {
+              select: { title: true },
+            },
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -1219,7 +1403,7 @@ export class AdminService {
       invoiceId: p.invoiceId,
       userName: p.user.name,
       userEmail: p.user.email,
-      eventTitle: p.event.title,
+      eventTitle: p.registration?.event?.title || 'N/A',
       registrationNumber: p.registration?.registrationNumber || 'N/A',
       amount: p.amount,
       status: p.status,

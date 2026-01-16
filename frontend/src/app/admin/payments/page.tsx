@@ -99,7 +99,6 @@ export default function AdminPaymentsPage() {
       });
       return response.data.data;
     },
-    enabled: !!eventId,
   });
 
   // Filter events - show all events
@@ -128,7 +127,7 @@ export default function AdminPaymentsPage() {
         status: statusFilter,
         search,
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -159,7 +158,7 @@ export default function AdminPaymentsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
         <div className="w-full max-w-[2000px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-4 sm:py-6 md:py-8 lg:py-10">
-          
+
           {/* Header */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
             <div>
@@ -245,7 +244,7 @@ export default function AdminPaymentsPage() {
           {/* Events Grid */}
           <div className="space-y-4 sm:space-y-6">
             <h2 className="text-xl sm:text-2xl font-black text-gray-900">Events Overview</h2>
-            
+
             {filteredEvents.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -260,10 +259,10 @@ export default function AdminPaymentsPage() {
                           <div className="p-3 rounded-xl bg-gradient-to-br from-primary-50 to-indigo-50 text-primary-600">
                             <Calendar className="w-5 h-5" />
                           </div>
-                          <Badge 
+                          <Badge
                             variant={
                               event.eventStatus === 'upcoming' ? 'primary' :
-                              event.eventStatus === 'ongoing' ? 'success' : 'default'
+                                event.eventStatus === 'ongoing' ? 'success' : 'default'
                             }
                             className="capitalize font-bold text-xs px-2.5 py-1"
                           >
@@ -330,7 +329,7 @@ export default function AdminPaymentsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="w-full max-w-[2000px] mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-4 sm:py-6 md:py-8 lg:py-10">
-        
+
         {/* Header with Back Button */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -347,7 +346,7 @@ export default function AdminPaymentsPage() {
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">Back</span>
             </Button>
-            
+
             <div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
                 {selectedEvent?.title || 'Event Payments'}
@@ -358,9 +357,9 @@ export default function AdminPaymentsPage() {
             </div>
           </div>
 
-          <Button 
-            onClick={exportPayments} 
-            variant="outline" 
+          <Button
+            onClick={exportPayments}
+            variant="outline"
             className="flex items-center gap-2 rounded-xl min-h-[44px] font-bold"
           >
             <Download className="w-4 h-4" />

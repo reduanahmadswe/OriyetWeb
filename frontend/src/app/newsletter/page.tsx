@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, FileText, Download, Eye, Calendar, Newspaper } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Search, FileText, Download, Eye, Calendar, Newspaper, Share2 } from 'lucide-react';
 import { newsletterAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import { Loading, Pagination } from '@/components/ui';
@@ -10,6 +11,7 @@ import { Loading, Pagination } from '@/components/ui';
 interface Newsletter {
   id: number;
   title: string;
+  slug?: string;
   description?: string;
   thumbnail?: string;
   pdfLink: string;
@@ -115,9 +117,34 @@ const getGoogleDriveThumbnailUrl = (url: string) => {
 };
 
 export default function NewsletterPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [viewingNewsletter, setViewingNewsletter] = useState<Newsletter | null>(null);
+
+  // Check if there's a slug or ID in URL on mount
+  useEffect(() => {
+    const slug = searchParams.get('slug');
+    const id = searchParams.get('id');
+
+    if ((slug || id) && !viewingNewsletter) {
+      // Fetch newsletter by slug or ID
+      const fetchPromise = slug
+        ? newsletterAPI.getBySlug(slug)
+        : newsletterAPI.getById(Number(id));
+
+      fetchPromise
+        .then(response => {
+          setViewingNewsletter(response.data.data);
+        })
+        .catch(error => {
+          console.error('Failed to load newsletter:', error);
+          // Remove invalid slug/id from URL
+          router.push('/newsletter');
+        });
+    }
+  }, [searchParams]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['newsletters', page, search],
@@ -138,11 +165,54 @@ export default function NewsletterPage() {
 
   const handleView = async (newsletter: Newsletter) => {
     setViewingNewsletter(newsletter);
+
+    // Update URL with slug for shareable link
+    if (newsletter.slug) {
+      router.push(`/newsletter?slug=${newsletter.slug}`, { scroll: false });
+    }
+
     try {
       await newsletterAPI.incrementViews(newsletter.id);
     } catch (error) {
       console.error('Failed to increment views:', error);
     }
+  };
+
+  const handleCloseModal = () => {
+    setViewingNewsletter(null);
+    // Remove slug from URL when closing
+    router.push('/newsletter', { scroll: false });
+  };
+
+  const handleShare = async (newsletter: Newsletter) => {
+    // Use slug if available, otherwise fall back to ID
+    const identifier = newsletter.slug || `id-${newsletter.id}`;
+    const shareUrl = newsletter.slug
+      ? `${window.location.origin}/newsletter?slug=${newsletter.slug}`
+      : `${window.location.origin}/newsletter?id=${newsletter.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: newsletter.title,
+          text: newsletter.description || newsletter.title,
+          url: shareUrl,
+        });
+      } catch (error) {
+        // User cancelled or error occurred
+        copyToClipboard(shareUrl);
+      }
+    } else {
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('Link copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+    });
   };
 
   const handleDownload = async (newsletter: Newsletter) => {
@@ -348,55 +418,75 @@ export default function NewsletterPage() {
           ) : data?.newsletters?.length > 0 ? (
             <>
               <div className={`grid gap-8 ${data.newsletters.length === 1
-                  ? 'grid-cols-1 max-w-md mx-auto'
-                  : data.newsletters.length === 2
-                    ? 'grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto'
-                    : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                ? 'grid-cols-1 max-w-md mx-auto'
+                : data.newsletters.length === 2
+                  ? 'grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto'
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
                 }`}>
                 {data.newsletters.map((newsletter: Newsletter) => (
                   <article
                     key={newsletter.id}
-                    className="group bg-white rounded-2xl overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-300 border border-gray-100 flex flex-col hover:-translate-y-1"
+                    className="group relative overflow-hidden h-full flex flex-col bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#004aad]/30 hover:-translate-y-2 hover:scale-[1.02]"
                   >
-                    {/* Thumbnail */}
-                    <div className="relative h-48 w-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#004aad]/10 to-[#ff7620]/10">
+                    {/* Image Section - Top - Compact Aspect Ratio */}
+                    <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-50">
                       {newsletter.thumbnail ? (
                         <img
                           src={getGoogleDriveThumbnailUrl(newsletter.thumbnail)}
                           alt={newsletter.title}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                           referrerPolicy="no-referrer"
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#004aad]/10 to-[#ff7620]/10">
                           <FileText className="w-16 h-16 text-[#004aad]/30" />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Gradient Overlay on Hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                      {/* Logo/Brand - Top Left on Image */}
+                      <div className="absolute top-2 left-2 z-10 transition-transform duration-300 group-hover:scale-110">
+                        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                          <div className="w-4 h-4 rounded-full bg-[#004aad] flex items-center justify-center group-hover:bg-[#0056cc] transition-colors duration-300">
+                            <Newspaper className="w-2.5 h-2.5 text-white" />
+                          </div>
+                          <span className="text-[9px] font-bold text-[#004aad] tracking-wide">ORIYET</span>
+                        </div>
+                      </div>
+
+                      {/* Status Badge - Top Right on Image */}
+                      <div className="absolute top-2 right-2 z-10 transition-transform duration-300 group-hover:scale-110">
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm group-hover:shadow-md transition-all duration-300 bg-[#ff7620]/90 text-white group-hover:bg-[#ff7620]">
+                          Newsletter
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-5 flex flex-col flex-grow">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#004aad] transition-colors leading-tight">
+                    {/* Content Section - Bottom */}
+                    <div className="flex-1 flex flex-col p-4">
+                      {/* Title */}
+                      <h3 className="text-base font-bold leading-tight mb-1.5 text-gray-900 group-hover:text-[#004aad] transition-colors duration-300 line-clamp-2">
                         {newsletter.title}
                       </h3>
 
+                      {/* Description */}
                       {newsletter.description && (
-                        <p className="text-gray-600 text-sm line-clamp-2 mb-3 flex-grow leading-relaxed">
+                        <p className="text-gray-600 text-xs leading-relaxed line-clamp-2 mb-3 flex-1 group-hover:text-gray-700 transition-colors duration-300">
                           {newsletter.description}
                         </p>
                       )}
 
-                      {/* Date Range Badge */}
-                      {(newsletter.startDate || newsletter.endDate) && (
-                        <div className="mb-3">
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#004aad]/10 to-[#ff7620]/10 rounded-lg border border-[#004aad]/20">
-                            <Calendar className="w-3.5 h-3.5 text-[#004aad]" />
-                            <span className="text-xs font-medium text-gray-700">
+                      {/* Footer: Date Range & Stats */}
+                      <div className="space-y-1.5">
+                        {/* Date Range */}
+                        {(newsletter.startDate || newsletter.endDate) && (
+                          <div className="flex items-center text-[11px] font-medium text-gray-600 group-hover:text-[#004aad] transition-colors duration-300">
+                            <Calendar className="w-3 h-3 mr-1 text-[#004aad] group-hover:scale-110 transition-transform duration-300" />
+                            <span className="line-clamp-1">
                               {newsletter.startDate && newsletter.endDate ? (
-                                <>
-                                  {formatDate(newsletter.startDate)} — {formatDate(newsletter.endDate)}
-                                </>
+                                <>{formatDate(newsletter.startDate)} — {formatDate(newsletter.endDate)}</>
                               ) : newsletter.startDate ? (
                                 <>{formatDate(newsletter.startDate)} থেকে</>
                               ) : (
@@ -404,42 +494,40 @@ export default function NewsletterPage() {
                               )}
                             </span>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {/* Stats */}
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-                        <span className="flex items-center gap-1 text-gray-400">
-                          প্রকাশ: {formatDate(newsletter.createdAt)}
-                        </span>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1">
+                        {/* Stats Row */}
+                        <div className="flex items-center justify-between text-[11px] font-medium text-gray-500">
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              {newsletter.views}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Download className="w-3 h-3" />
+                              {newsletter.downloads}
+                            </span>
+                          </div>
+                          <span className="text-gray-400">{formatDate(newsletter.createdAt)}</span>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2 pt-2">
+                          <button
+                            onClick={() => handleView(newsletter)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-[#004aad] hover:bg-[#003882] text-white text-xs font-bold rounded-lg transition-all duration-300 hover:shadow-lg"
+                          >
                             <Eye className="w-3.5 h-3.5" />
-                            {newsletter.views}
-                          </span>
-                          <span className="flex items-center gap-1">
+                            View
+                          </button>
+                          <button
+                            onClick={() => handleDownload(newsletter)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 bg-[#ff7620] hover:bg-[#e56a1a] text-white text-xs font-bold rounded-lg transition-all duration-300 hover:shadow-lg"
+                          >
                             <Download className="w-3.5 h-3.5" />
-                            {newsletter.downloads}
-                          </span>
+                            Download
+                          </button>
                         </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2 pt-2 border-t border-gray-100">
-                        <button
-                          onClick={() => handleView(newsletter)}
-                          className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-[#004aad] hover:bg-[#003882] text-white text-sm font-medium rounded-xl transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                          View
-                        </button>
-                        <button
-                          onClick={() => handleDownload(newsletter)}
-                          className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-[#ff7620] hover:bg-[#e56a1a] text-white text-sm font-medium rounded-xl transition-colors"
-                        >
-                          <Download className="w-4 h-4" />
-                          Download
-                        </button>
                       </div>
                     </div>
                   </article>
@@ -481,7 +569,7 @@ export default function NewsletterPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setViewingNewsletter(null)}
+            onClick={handleCloseModal}
           />
           <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col w-full max-w-6xl" style={{ height: '90vh' }}>
             {/* Modal Header */}
@@ -493,6 +581,14 @@ export default function NewsletterPage() {
               </div>
               <div className="flex items-center gap-2 ml-4">
                 <button
+                  onClick={() => handleShare(viewingNewsletter)}
+                  className="flex items-center gap-2 py-2 px-4 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                  title="Share this newsletter"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </button>
+                <button
                   onClick={() => handleDownload(viewingNewsletter)}
                   className="flex items-center gap-2 py-2 px-4 bg-[#ff7620] hover:bg-[#e56a1a] text-white text-sm font-medium rounded-lg transition-colors"
                 >
@@ -500,7 +596,7 @@ export default function NewsletterPage() {
                   Download
                 </button>
                 <button
-                  onClick={() => setViewingNewsletter(null)}
+                  onClick={handleCloseModal}
                   className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-600"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
