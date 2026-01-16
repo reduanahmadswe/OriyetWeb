@@ -1,7 +1,17 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const normalizeApiBase = (rawUrl: string) => {
+  // Accept either:
+  // - http://localhost:5000
+  // - http://localhost:5000/api
+  // and normalize to a single base URL without a trailing /api.
+  const trimmed = rawUrl.replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed.slice(0, -4) : trimmed;
+};
+
+const API_BASE = normalizeApiBase(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
+const API_URL = `${API_BASE}/api`;
 
 const api = axios.create({
   baseURL: API_URL,

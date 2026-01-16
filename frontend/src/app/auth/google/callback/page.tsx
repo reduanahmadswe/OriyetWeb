@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppDispatch } from '@/store/hooks';
 import { loginUser } from '@/store/slices/auth.slice';
-import axios from 'axios';
+import api from '@/lib/api';
 
 export default function GoogleCallbackPage() {
   const router = useRouter();
@@ -31,13 +31,10 @@ export default function GoogleCallbackPage() {
 
       try {
         // Exchange authorization code for tokens via backend
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/auth/google/callback`,
-          {
-            code,
-            redirectUri: `${window.location.origin}/auth/google/callback`,
-          }
-        );
+        const response = await api.post('/auth/google/callback', {
+          code,
+          redirectUri: `${window.location.origin}/auth/google/callback`,
+        });
 
         const { user, accessToken, refreshToken } = response.data;
 
